@@ -38,11 +38,36 @@ class _SettlementPageState extends State<SettlementPage> {
   int _selectedTab = 0;
 
   final _items = const <SettlementItem>[
-    SettlementItem(amount: '₦50,000.00', reference: 'SET-99281', date: 'Oct 24, 2023', status: SettlementStatus.completed),
-    SettlementItem(amount: '₦120,000.00', reference: 'SET-99280', date: 'Oct 22, 2023', status: SettlementStatus.pending),
-    SettlementItem(amount: '₦25,400.00', reference: 'SET-99279', date: 'Oct 20, 2023', status: SettlementStatus.completed),
-    SettlementItem(amount: '₦88,000.00', reference: 'SET-99278', date: 'Oct 18, 2023', status: SettlementStatus.failed),
-    SettlementItem(amount: '₦310,000.00', reference: 'SET-99277', date: 'Oct 15, 2023', status: SettlementStatus.completed),
+    SettlementItem(
+      amount: '₦50,000.00',
+      reference: 'SET-99281',
+      date: 'Oct 24, 2023',
+      status: SettlementStatus.completed,
+    ),
+    SettlementItem(
+      amount: '₦120,000.00',
+      reference: 'SET-99280',
+      date: 'Oct 22, 2023',
+      status: SettlementStatus.pending,
+    ),
+    SettlementItem(
+      amount: '₦25,400.00',
+      reference: 'SET-99279',
+      date: 'Oct 20, 2023',
+      status: SettlementStatus.completed,
+    ),
+    SettlementItem(
+      amount: '₦88,000.00',
+      reference: 'SET-99278',
+      date: 'Oct 18, 2023',
+      status: SettlementStatus.failed,
+    ),
+    SettlementItem(
+      amount: '₦310,000.00',
+      reference: 'SET-99277',
+      date: 'Oct 15, 2023',
+      status: SettlementStatus.completed,
+    ),
   ];
 
   @override
@@ -58,7 +83,12 @@ class _SettlementPageState extends State<SettlementPage> {
                 _TopBar(textTheme: textTheme),
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.lg, AppSpacing.md, 120),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      AppSpacing.lg,
+                      AppSpacing.md,
+                      120,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -66,7 +96,9 @@ class _SettlementPageState extends State<SettlementPage> {
                         const SizedBox(height: AppSpacing.xs),
                         Text(
                           'Manage your fuel revenue and payouts',
-                          style: textTheme.bodyLarge?.copyWith(color: AppColors.muted),
+                          style: textTheme.bodyLarge?.copyWith(
+                            color: AppColors.muted,
+                          ),
                         ),
                         const SizedBox(height: AppSpacing.lg),
                         _summaryCard(textTheme),
@@ -106,21 +138,57 @@ class _SettlementPageState extends State<SettlementPage> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _metric(textTheme, 'Available Balance', '₦840,500.00', AppColors.secondary),
+                    _metric(
+                      textTheme,
+                      'Available Balance',
+                      '₦840,500.00',
+                      AppColors.secondary,
+                    ),
                     const SizedBox(height: AppSpacing.md),
-                    _metric(textTheme, 'Total Earnings', '₦2,450,000.00', Colors.white),
+                    _metric(
+                      textTheme,
+                      'Total Earnings',
+                      '₦2,450,000.00',
+                      Colors.white,
+                    ),
                     const SizedBox(height: AppSpacing.md),
-                    _metric(textTheme, 'Pending Settlement', '₦120,000.00', AppColors.tertiary),
+                    _metric(
+                      textTheme,
+                      'Pending Settlement',
+                      '₦120,000.00',
+                      AppColors.tertiary,
+                    ),
                   ],
                 );
               }
               return Row(
                 children: [
-                  Expanded(child: _metric(textTheme, 'Available Balance', '₦840,500.00', AppColors.secondary)),
+                  Expanded(
+                    child: _metric(
+                      textTheme,
+                      'Available Balance',
+                      '₦840,500.00',
+                      AppColors.secondary,
+                    ),
+                  ),
                   const VerticalDivider(color: Colors.white10),
-                  Expanded(child: _metric(textTheme, 'Total Earnings', '₦2,450,000.00', Colors.white)),
+                  Expanded(
+                    child: _metric(
+                      textTheme,
+                      'Total Earnings',
+                      '₦2,450,000.00',
+                      Colors.white,
+                    ),
+                  ),
                   const VerticalDivider(color: Colors.white10),
-                  Expanded(child: _metric(textTheme, 'Pending Settlement', '₦120,000.00', AppColors.tertiary)),
+                  Expanded(
+                    child: _metric(
+                      textTheme,
+                      'Pending Settlement',
+                      '₦120,000.00',
+                      AppColors.tertiary,
+                    ),
+                  ),
                 ],
               );
             },
@@ -131,8 +199,12 @@ class _SettlementPageState extends State<SettlementPage> {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                gradient: const LinearGradient(colors: [AppColors.primaryContainer, AppColors.secondary]),
-                boxShadow: const [BoxShadow(color: Color(0x338B80FF), blurRadius: 18)],
+                gradient: const LinearGradient(
+                  colors: [AppColors.primaryContainer, AppColors.secondary],
+                ),
+                boxShadow: const [
+                  BoxShadow(color: Color(0x338B80FF), blurRadius: 18),
+                ],
               ),
               child: FilledButton.icon(
                 onPressed: _openRequestPayoutModal,
@@ -141,7 +213,10 @@ class _SettlementPageState extends State<SettlementPage> {
                   shadowColor: Colors.transparent,
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 ),
-                icon: const Icon(Icons.account_balance_wallet_rounded, color: AppColors.onPrimaryContainer),
+                icon: const Icon(
+                  Icons.account_balance_wallet_rounded,
+                  color: AppColors.onPrimaryContainer,
+                ),
                 label: Text(
                   'Request Settlement',
                   style: textTheme.bodyLarge?.copyWith(
@@ -182,23 +257,28 @@ class _SettlementPageState extends State<SettlementPage> {
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: [
-              _tabButton('Weekly', 0),
-              _tabButton('Monthly', 1),
-            ],
+            children: [_tabButton('Weekly', 0), _tabButton('Monthly', 1)],
           ),
         ),
         SizedBox(
           width: 260,
           child: TextField(
             decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.search, color: AppColors.muted, size: 18),
+              prefixIcon: const Icon(
+                Icons.search,
+                color: AppColors.muted,
+                size: 18,
+              ),
               hintText: 'Search transactions...',
               hintStyle: textTheme.bodyMedium?.copyWith(color: Colors.white38),
               filled: true,
               fillColor: const Color(0x660D1C2D),
-              enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white12)),
-              focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primary)),
+              enabledBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white12),
+              ),
+              focusedBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.primary),
+              ),
             ),
           ),
         ),
@@ -215,9 +295,18 @@ class _SettlementPageState extends State<SettlementPage> {
               dropdownColor: AppColors.surface,
               iconEnabledColor: AppColors.muted,
               items: const [
-                DropdownMenuItem(value: 'October 2023', child: Text('October 2023')),
-                DropdownMenuItem(value: 'September 2023', child: Text('September 2023')),
-                DropdownMenuItem(value: 'August 2023', child: Text('August 2023')),
+                DropdownMenuItem(
+                  value: 'October 2023',
+                  child: Text('October 2023'),
+                ),
+                DropdownMenuItem(
+                  value: 'September 2023',
+                  child: Text('September 2023'),
+                ),
+                DropdownMenuItem(
+                  value: 'August 2023',
+                  child: Text('August 2023'),
+                ),
               ],
               onChanged: (_) {},
             ),
@@ -233,7 +322,10 @@ class _SettlementPageState extends State<SettlementPage> {
       onTap: () => setState(() => _selectedTab = index),
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
         decoration: BoxDecoration(
           color: selected ? const Color(0x3300B954) : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
@@ -241,8 +333,8 @@ class _SettlementPageState extends State<SettlementPage> {
         child: Text(
           label,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: selected ? AppColors.secondary : AppColors.muted,
-              ),
+            color: selected ? AppColors.secondary : AppColors.muted,
+          ),
         ),
       ),
     );
@@ -266,19 +358,44 @@ class _SettlementPageState extends State<SettlementPage> {
               ],
               rows: _items
                   .map(
-                    (item) => DataRow(cells: [
-                      DataCell(Text(item.amount, style: textTheme.bodyMedium?.copyWith(color: Colors.white))),
-                      DataCell(Text(item.reference, style: textTheme.labelSmall?.copyWith(color: AppColors.outline))),
-                      DataCell(Text(item.date, style: textTheme.labelSmall?.copyWith(color: AppColors.muted))),
-                      DataCell(_statusChip(item.status, textTheme)),
-                      DataCell(
-                        Icon(
-                          item.status == SettlementStatus.failed ? Icons.refresh : Icons.receipt_long,
-                          color: AppColors.primaryContainer,
-                          size: 18,
+                    (item) => DataRow(
+                      cells: [
+                        DataCell(
+                          Text(
+                            item.amount,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                      ),
-                    ]),
+                        DataCell(
+                          Text(
+                            item.reference,
+                            style: textTheme.labelSmall?.copyWith(
+                              color: AppColors.outline,
+                            ),
+                          ),
+                        ),
+                        DataCell(
+                          Text(
+                            item.date,
+                            style: textTheme.labelSmall?.copyWith(
+                              color: AppColors.muted,
+                            ),
+                          ),
+                        ),
+                        DataCell(_statusChip(item.status, textTheme)),
+                        DataCell(
+                          Icon(
+                            item.status == SettlementStatus.failed
+                                ? Icons.refresh
+                                : Icons.receipt_long,
+                            color: AppColors.primaryContainer,
+                            size: 18,
+                          ),
+                        ),
+                      ],
+                    ),
                   )
                   .toList(),
             ),
@@ -373,8 +490,11 @@ class _TopBar extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.sm),
           Text(
-            'FUEL OPS',
-            style: textTheme.headlineSmall?.copyWith(color: AppColors.primary, fontWeight: FontWeight.w800),
+            'FUELCREDIT',
+            style: textTheme.headlineSmall?.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+            ),
           ),
           const Spacer(),
           IconButton(
@@ -438,9 +558,8 @@ class _RequestPayoutModalState extends State<_RequestPayoutModal> {
     }
     setState(() => _isProcessing = true);
 
-    final result = await AppServices.instance.settlementRepository.requestSettlement(
-      RequestSettlementRequest(amount: _inputAmount),
-    );
+    final result = await AppServices.instance.settlementRepository
+        .requestSettlement(RequestSettlementRequest(amount: _inputAmount));
 
     if (!mounted) {
       return;
@@ -458,21 +577,25 @@ class _RequestPayoutModalState extends State<_RequestPayoutModal> {
         }
       case ApiFailure<RequestSettlementResponse> failure:
         setState(() => _isProcessing = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failure.error.message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(failure.error.message)));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final receiveAmount =
-        (_inputAmount - widget.processingFee).clamp(0, double.infinity).toDouble();
+    final receiveAmount = (_inputAmount - widget.processingFee)
+        .clamp(0, double.infinity)
+        .toDouble();
 
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.lg),
+      insetPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.lg,
+      ),
       child: GlassCard(
         borderRadius: BorderRadius.circular(24),
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -511,31 +634,45 @@ class _RequestPayoutModalState extends State<_RequestPayoutModal> {
                   Expanded(
                     child: Text(
                       'Amount to Withdraw',
-                      style: textTheme.labelSmall?.copyWith(color: AppColors.muted),
+                      style: textTheme.labelSmall?.copyWith(
+                        color: AppColors.muted,
+                      ),
                     ),
                   ),
                   TextButton(
                     onPressed: _setMax,
                     child: Text(
                       'Max: ${_currency(widget.maxBalance)}',
-                      style: textTheme.labelSmall?.copyWith(color: AppColors.secondary),
+                      style: textTheme.labelSmall?.copyWith(
+                        color: AppColors.secondary,
+                      ),
                     ),
                   ),
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
                 decoration: const BoxDecoration(
                   border: Border(bottom: BorderSide(color: Colors.white24)),
                 ),
                 child: Row(
                   children: [
-                    Text('₦', style: textTheme.headlineSmall?.copyWith(color: AppColors.outline)),
+                    Text(
+                      '₦',
+                      style: textTheme.headlineSmall?.copyWith(
+                        color: AppColors.outline,
+                      ),
+                    ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: TextField(
                         controller: _amountController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         onChanged: (_) => setState(() {}),
                         style: textTheme.headlineSmall,
                         decoration: const InputDecoration(
@@ -565,15 +702,26 @@ class _RequestPayoutModalState extends State<_RequestPayoutModal> {
                         color: const Color(0x33273647),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.account_balance, color: AppColors.primary),
+                      child: const Icon(
+                        Icons.account_balance,
+                        color: AppColors.primary,
+                      ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Zenith Bank', style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
-                          Text('****1234 • Current Account', style: textTheme.labelSmall),
+                          Text(
+                            'Zenith Bank',
+                            style: textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            '****1234 • Current Account',
+                            style: textTheme.labelSmall,
+                          ),
                         ],
                       ),
                     ),
@@ -590,9 +738,17 @@ class _RequestPayoutModalState extends State<_RequestPayoutModal> {
                     Row(
                       children: [
                         Expanded(
-                          child: Text('Processing Fee', style: textTheme.bodyLarge?.copyWith(color: AppColors.muted)),
+                          child: Text(
+                            'Processing Fee',
+                            style: textTheme.bodyLarge?.copyWith(
+                              color: AppColors.muted,
+                            ),
+                          ),
                         ),
-                        Text(_currency(widget.processingFee), style: textTheme.bodyMedium),
+                        Text(
+                          _currency(widget.processingFee),
+                          style: textTheme.bodyMedium,
+                        ),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.sm),
@@ -603,12 +759,16 @@ class _RequestPayoutModalState extends State<_RequestPayoutModal> {
                         Expanded(
                           child: Text(
                             'You will receive',
-                            style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+                            style: textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                         Text(
                           _currency(receiveAmount),
-                          style: textTheme.headlineSmall?.copyWith(color: AppColors.secondary),
+                          style: textTheme.headlineSmall?.copyWith(
+                            color: AppColors.secondary,
+                          ),
                         ),
                       ],
                     ),
@@ -623,32 +783,42 @@ class _RequestPayoutModalState extends State<_RequestPayoutModal> {
                     borderRadius: BorderRadius.circular(12),
                     gradient: LinearGradient(
                       colors: _isSuccess
-                          ? const [AppColors.secondary, AppColors.secondaryContainer]
-                          : const [AppColors.primaryContainer, AppColors.secondary],
+                          ? const [
+                              AppColors.secondary,
+                              AppColors.secondaryContainer,
+                            ]
+                          : const [
+                              AppColors.primaryContainer,
+                              AppColors.secondary,
+                            ],
                     ),
                   ),
                   child: FilledButton.icon(
-                    onPressed: (_isSuccess || _isProcessing) ? null : _confirmPayout,
+                    onPressed: (_isSuccess || _isProcessing)
+                        ? null
+                        : _confirmPayout,
                     style: FilledButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       disabledBackgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
-                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.md,
+                      ),
                     ),
                     icon: Icon(
                       _isSuccess
                           ? Icons.check_circle
                           : _isProcessing
-                              ? Icons.sync
-                              : Icons.send,
+                          ? Icons.sync
+                          : Icons.send,
                       color: AppColors.onPrimaryContainer,
                     ),
                     label: Text(
                       _isSuccess
                           ? 'Success'
                           : _isProcessing
-                              ? 'Processing...'
-                              : 'Confirm Payout',
+                          ? 'Processing...'
+                          : 'Confirm Payout',
                       style: textTheme.bodyLarge?.copyWith(
                         color: AppColors.onPrimaryContainer,
                         fontWeight: FontWeight.w700,
@@ -660,8 +830,10 @@ class _RequestPayoutModalState extends State<_RequestPayoutModal> {
               const SizedBox(height: AppSpacing.sm),
               Center(
                 child: Text(
-                  'Secured by FUEL OPS Real-Time Clearing System',
-                  style: textTheme.labelSmall?.copyWith(color: AppColors.outline),
+                  'Secured by FUELCREDIT Real-Time Clearing System',
+                  style: textTheme.labelSmall?.copyWith(
+                    color: AppColors.outline,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),

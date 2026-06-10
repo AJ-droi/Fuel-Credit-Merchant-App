@@ -58,7 +58,17 @@ class _LoginFormCardState extends State<LoginFormCard> {
     setState(() => _isSubmitting = false);
 
     switch (result) {
-      case ApiSuccess<LoginResponse> _:
+      case ApiSuccess<LoginResponse> success:
+        if (!success.data.success || success.data.accessToken.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                success.data.message.isEmpty ? 'Login failed.' : success.data.message,
+              ),
+            ),
+          );
+          return;
+        }
         Navigator.of(context).pushReplacementNamed(AppRouter.dashboard);
       case ApiFailure<LoginResponse> failure:
         ScaffoldMessenger.of(context).showSnackBar(

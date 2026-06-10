@@ -8,6 +8,13 @@ class FuelSaleRepository {
 
   final ApiClient _apiClient;
 
+  Future<ApiResult<FuelPriceResponse>> fetchFuelPrice() {
+    return _apiClient.get<FuelPriceResponse>(
+      ApiEndpoints.merchantFuelPrice,
+      parser: (json) => FuelPriceResponse.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
   Future<ApiResult<FuelSaleResponse>> createSale(CreateFuelSaleRequest request) {
     return _apiClient.post<FuelSaleResponse>(
       ApiEndpoints.fuelSaleCreate,
@@ -16,7 +23,7 @@ class FuelSaleRepository {
     );
   }
 
-  Future<ApiResult<QrPaymentResponse>> generateQr(CreateFuelSaleRequest request) {
+  Future<ApiResult<QrPaymentResponse>> generateQr(GenerateQrRequest request) {
     return _apiClient.post<QrPaymentResponse>(
       ApiEndpoints.fuelSaleGenerateQr,
       data: request.toJson(),

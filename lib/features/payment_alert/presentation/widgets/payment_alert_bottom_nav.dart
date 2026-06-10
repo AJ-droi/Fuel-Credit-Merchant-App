@@ -66,6 +66,12 @@ class PaymentAlertBottomNav extends StatelessWidget {
             onTap: () => Navigator.of(context).pushReplacementNamed(AppRouter.fuelSale),
           ),
           navItem(
+            icon: Icons.group_rounded,
+            label: 'Staff',
+            active: false,
+            onTap: () => Navigator.of(context).pushNamed(AppRouter.management),
+          ),
+          navItem(
             icon: Icons.account_balance_wallet_outlined,
             label: 'Settlement',
             active: false,

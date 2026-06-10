@@ -1,10 +1,26 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/network/api_result.dart';
+import '../../../../core/network/app_services.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../data/models/dashboard_models.dart';
 
-class DashboardTopBar extends StatelessWidget {
+class DashboardTopBar extends StatefulWidget {
   const DashboardTopBar({super.key});
+
+  @override
+  State<DashboardTopBar> createState() => _DashboardTopBarState();
+}
+
+class _DashboardTopBarState extends State<DashboardTopBar> {
+  late Future<ApiResult<DashboardSummary>> _summaryFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _summaryFuture = AppServices.instance.dashboardRepository.fetchSummary();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,60 +29,80 @@ class DashboardTopBar extends StatelessWidget {
     return Container(
       height: 80,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      decoration: BoxDecoration(
-        color: const Color(0x66122131),
-        border: const Border(bottom: BorderSide(color: Colors.white10)),
+      decoration: const BoxDecoration(
+        color: Color(0x66122131),
+        border: Border(bottom: BorderSide(color: Colors.white10)),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.primaryContainer,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white24),
-            ),
-            child: const Icon(Icons.person, color: Colors.white, size: 20),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'FUEL OPS',
-                  style: textTheme.headlineSmall?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w800,
-                  ),
+      child: FutureBuilder<ApiResult<DashboardSummary>>(
+        future: _summaryFuture,
+        builder: (context, snapshot) {
+          var businessName = 'FUELCREDIT Merchant';
+          var merchantId = 'Merchant Dashboard';
+
+          final result = snapshot.data;
+          if (result is ApiSuccess<DashboardSummary>) {
+            businessName = result.data.data.businessName;
+            merchantId = result.data.data.merchantId;
+          }
+
+          return Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryContainer,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white24),
                 ),
-                Row(
+                child: const Icon(Icons.person, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: AppColors.secondary,
-                        shape: BoxShape.circle,
+                    Text(
+                      'FUELCREDIT',
+                      style: textTheme.headlineSmall?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Text(
-                      'Victoria Island Station #04',
-                      style: textTheme.labelSmall,
+                    Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: AppColors.secondary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        Expanded(
+                          child: Text(
+                            businessName.isEmpty ? merchantId : businessName,
+                            style: textTheme.labelSmall,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.settings_outlined, color: AppColors.primary),
-          ),
-        ],
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.settings_outlined,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

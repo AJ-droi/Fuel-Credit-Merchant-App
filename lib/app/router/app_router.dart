@@ -6,6 +6,8 @@ import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/fuel_sale/presentation/pages/fuel_sale_page.dart';
 import '../../features/payment_alert/presentation/pages/payment_alert_page.dart';
 import '../../features/settlement/presentation/pages/settlement_page.dart';
+import '../../features/transactions/presentation/pages/transactions_page.dart';
+import '../../features/management/presentation/pages/management_page.dart';
 
 final class AppRouter {
   const AppRouter._();
@@ -16,6 +18,8 @@ final class AppRouter {
   static const String paymentAlert = '/payment-alert';
   static const String settlement = '/settlement';
   static const String account = '/account';
+  static const String transactions = '/transactions';
+  static const String management = '/management';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -54,6 +58,16 @@ final class AppRouter {
       case account:
         return MaterialPageRoute<void>(
           builder: (_) => const AccountPage(),
+          settings: settings,
+        );
+      case transactions:
+        return MaterialPageRoute<void>(
+          builder: (_) => const TransactionsPage(),
+          settings: settings,
+        );
+      case management:
+        return MaterialPageRoute<void>(
+          builder: (_) => const ManagementPage(),
           settings: settings,
         );
       default:

@@ -39,7 +39,9 @@ class PaymentAlertPage extends StatelessWidget {
     final accent = _isSuccess ? AppColors.secondary : const Color(0xFFFFB4AB);
     final icon = _isSuccess ? Icons.check_circle : Icons.cancel;
     final title = _isSuccess ? 'Payment Successful' : 'Payment Failed';
-    final subtitle = _isSuccess ? 'TRANSACTION COMPLETE' : 'TRANSACTION DECLINED';
+    final subtitle = _isSuccess
+        ? 'TRANSACTION COMPLETE'
+        : 'TRANSACTION DECLINED';
 
     return Scaffold(
       body: Stack(
@@ -88,11 +90,16 @@ class PaymentAlertPage extends StatelessWidget {
                               padding: const EdgeInsets.all(AppSpacing.lg),
                               child: Column(
                                 children: [
-                                  Text('AMOUNT PAID', style: textTheme.labelSmall),
+                                  Text(
+                                    'AMOUNT PAID',
+                                    style: textTheme.labelSmall,
+                                  ),
                                   const SizedBox(height: AppSpacing.xs),
                                   Text(
                                     args.amount,
-                                    style: textTheme.displayLarge?.copyWith(color: accent),
+                                    style: textTheme.displayLarge?.copyWith(
+                                      color: accent,
+                                    ),
                                   ),
                                   const SizedBox(height: AppSpacing.md),
                                   const Divider(color: Colors.white10),
@@ -120,7 +127,8 @@ class PaymentAlertPage extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(8),
                                       gradient: LinearGradient(
                                         colors: [
-                                          AppColors.primaryContainer.withOpacity(0.5),
+                                          AppColors.primaryContainer
+                                              .withOpacity(0.5),
                                           accent.withOpacity(0.5),
                                         ],
                                       ),
@@ -138,19 +146,29 @@ class PaymentAlertPage extends StatelessWidget {
                                   gradient: LinearGradient(
                                     colors: [
                                       AppColors.primaryContainer,
-                                      _isSuccess ? AppColors.secondary : const Color(0xFFFF6B6B),
+                                      _isSuccess
+                                          ? AppColors.secondary
+                                          : const Color(0xFFFF6B6B),
                                     ],
                                   ),
                                 ),
                                 child: FilledButton.icon(
                                   onPressed: () => Navigator.of(context)
-                                      .pushNamedAndRemoveUntil(AppRouter.dashboard, (route) => false),
+                                      .pushNamedAndRemoveUntil(
+                                        AppRouter.dashboard,
+                                        (route) => false,
+                                      ),
                                   style: FilledButton.styleFrom(
                                     backgroundColor: Colors.transparent,
                                     shadowColor: Colors.transparent,
-                                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: AppSpacing.md,
+                                    ),
                                   ),
-                                  icon: const Icon(Icons.arrow_forward, color: AppColors.background),
+                                  icon: const Icon(
+                                    Icons.arrow_forward,
+                                    color: AppColors.background,
+                                  ),
                                   label: Text(
                                     'Back to Dashboard',
                                     style: textTheme.bodyLarge?.copyWith(
@@ -201,7 +219,7 @@ class _TopBar extends StatelessWidget {
           const Icon(Icons.local_gas_station_rounded, color: AppColors.primary),
           const SizedBox(width: AppSpacing.xs),
           Text(
-            'FUELFLOW',
+            'FUELCREDIT',
             style: textTheme.headlineSmall?.copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.w700,
@@ -210,7 +228,10 @@ class _TopBar extends StatelessWidget {
           const Spacer(),
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.notifications_none_rounded, color: AppColors.primary),
+            icon: const Icon(
+              Icons.notifications_none_rounded,
+              color: AppColors.primary,
+            ),
           ),
         ],
       ),
@@ -233,9 +254,7 @@ class _StatusBadge extends StatelessWidget {
         shape: BoxShape.circle,
         color: accent.withOpacity(0.2),
       ),
-      child: Center(
-        child: Icon(icon, size: 56, color: accent),
-      ),
+      child: Center(child: Icon(icon, size: 56, color: accent)),
     );
   }
 }
@@ -267,7 +286,10 @@ class _ReceiptRow extends StatelessWidget {
             children: [
               Text(leftTitle.toUpperCase(), style: textTheme.labelSmall),
               const SizedBox(height: AppSpacing.xs),
-              Text(leftValue, style: textTheme.bodyMedium?.copyWith(color: Colors.white)),
+              Text(
+                leftValue,
+                style: textTheme.bodyMedium?.copyWith(color: Colors.white),
+              ),
             ],
           ),
         ),
