@@ -8,13 +8,22 @@ class SettlementRepository {
 
   final ApiClient _apiClient;
 
-  Future<ApiResult<RequestSettlementResponse>> requestSettlement(
-    RequestSettlementRequest request,
-  ) {
-    return _apiClient.post<RequestSettlementResponse>(
-      ApiEndpoints.settlementsRequest,
-      data: request.toJson(),
-      parser: (json) => RequestSettlementResponse.fromJson(json as Map<String, dynamic>),
+  Future<ApiResult<MerchantSettlementList>> listSettlements({String? status}) {
+    return _apiClient.get<MerchantSettlementList>(
+      ApiEndpoints.merchantSettlements,
+      queryParameters: status != null ? {'status': status} : null,
+      parser: (json) => MerchantSettlementList.fromJson(json),
+    );
+  }
+
+  Future<ApiResult<MerchantSettlement>> confirmSettlement(String settlementId) {
+    return _apiClient.post<MerchantSettlement>(
+      '${ApiEndpoints.merchantSettlements}/$settlementId/confirm',
+      parser: (json) {
+        final map = json is Map<String, dynamic> ? json : <String, dynamic>{};
+        final data = map['data'] is Map<String, dynamic> ? map['data'] as Map<String, dynamic> : map;
+        return MerchantSettlement.fromJson(data);
+      },
     );
   }
 }

@@ -10,7 +10,7 @@ class DashboardRepository {
 
   Future<ApiResult<DashboardSummary>> fetchSummary() {
     return _apiClient.get<DashboardSummary>(
-      ApiEndpoints.dashboardSummary,
+      ApiEndpoints.merchantDashboard,
       parser: (json) => DashboardSummary.fromJson(json as Map<String, dynamic>),
     );
   }

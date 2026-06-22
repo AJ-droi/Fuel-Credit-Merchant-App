@@ -135,7 +135,11 @@ class _LoginFormCardState extends State<LoginFormCard> {
                   Switch(
                     value: _rememberMe,
                     onChanged: (value) => setState(() => _rememberMe = value),
-                    activeThumbColor: AppColors.secondary,
+                    thumbColor: MaterialStateProperty.resolveWith(
+                      (states) => states.contains(MaterialState.selected)
+                          ? AppColors.secondary
+                          : null,
+                    ),
                   ),
                   Text(
                     'Remember me',

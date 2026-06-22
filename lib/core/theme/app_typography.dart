@@ -9,7 +9,7 @@ final class AppTypography {
   static TextTheme textTheme() {
     return TextTheme(
       displayLarge: GoogleFonts.getFont(
-        'Geist',
+        'Inter',
         fontSize: 48,
         fontWeight: FontWeight.w700,
         height: 56 / 48,
@@ -17,7 +17,7 @@ final class AppTypography {
         color: AppColors.onBackground,
       ),
       headlineLarge: GoogleFonts.getFont(
-        'Geist',
+        'Inter',
         fontSize: 32,
         fontWeight: FontWeight.w600,
         height: 40 / 32,
@@ -25,14 +25,14 @@ final class AppTypography {
         color: AppColors.onBackground,
       ),
       headlineSmall: GoogleFonts.getFont(
-        'Geist',
+        'Inter',
         fontSize: 24,
         fontWeight: FontWeight.w600,
         height: 32 / 24,
         color: AppColors.onBackground,
       ),
       bodyLarge: GoogleFonts.getFont(
-        'Geist',
+        'Inter',
         fontSize: 16,
         height: 24 / 16,
         color: AppColors.onBackground,

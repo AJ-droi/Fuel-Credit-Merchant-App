@@ -3,14 +3,12 @@ final class ApiEndpoints {
 
   static const String login = '/auth/login';
 
-  static const String dashboardSummary = '/dashboard/summary';
-  static const String dashboardTransactions = '/dashboard/transactions';
+  static const String merchantDashboard = '/merchant/dashboard';
+  static const String merchantSettlements = '/merchant/settlements';
+  static const String merchantSalesSnapshots = '/merchant/sales-snapshots';
 
-  static const String fuelSaleCreate = '/fuel-sales';
-  static const String fuelSaleGenerateQr = '/fuel-sales/qr';
-
-  static const String settlements = '/settlements';
-  static const String settlementsRequest = '/settlements/request';
+  static const String fuelSaleCreate = '/merchant/fuel-sales';
+  static const String fuelSaleGenerateQr = '/merchant/fuel-sales/qr';
 
   static const String merchantProfile = '/merchant/profile';
 }
