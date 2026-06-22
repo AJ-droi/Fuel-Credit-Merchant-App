@@ -4,8 +4,8 @@ import '../../../../app/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 
-class FuelSaleBottomNav extends StatelessWidget {
-  const FuelSaleBottomNav({super.key});
+class ManagementBottomNav extends StatelessWidget {
+  const ManagementBottomNav({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +15,7 @@ class FuelSaleBottomNav extends StatelessWidget {
       required IconData icon,
       required String label,
       required bool active,
-      required VoidCallback onTap,
+      VoidCallback? onTap,
     }) {
       return Expanded(
         child: InkWell(
@@ -48,7 +48,7 @@ class FuelSaleBottomNav extends StatelessWidget {
       height: 78,
       padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.sm, AppSpacing.sm, 10),
       decoration: const BoxDecoration(
-        color: Color(0xCC122131),
+        color: Color(0xCC010F1F),
         border: Border(top: BorderSide(color: Colors.white10)),
       ),
       child: Row(
@@ -60,28 +60,28 @@ class FuelSaleBottomNav extends StatelessWidget {
             onTap: () => Navigator.of(context).pushReplacementNamed(AppRouter.dashboard),
           ),
           navItem(
-            icon: Icons.ev_station_rounded,
+            icon: Icons.local_gas_station_rounded,
             label: 'Fuel Sale',
-            active: true,
-            onTap: () {},
+            active: false,
+            onTap: () => Navigator.of(context).pushReplacementNamed(AppRouter.fuelSale),
           ),
           navItem(
             icon: Icons.group_rounded,
             label: 'Staff',
-            active: false,
-            onTap: () => Navigator.of(context).pushNamed(AppRouter.management),
+            active: true,
+            onTap: () {},
           ),
           navItem(
-            icon: Icons.account_balance_wallet_outlined,
+            icon: Icons.payments_outlined,
             label: 'Settlement',
             active: false,
-            onTap: () => Navigator.of(context).pushNamed(AppRouter.settlement),
+            onTap: () => Navigator.of(context).pushReplacementNamed(AppRouter.settlement),
           ),
           navItem(
             icon: Icons.person_outline_rounded,
             label: 'Profile',
             active: false,
-            onTap: () => Navigator.of(context).pushNamed(AppRouter.account),
+            onTap: () => Navigator.of(context).pushReplacementNamed(AppRouter.account),
           ),
         ],
       ),

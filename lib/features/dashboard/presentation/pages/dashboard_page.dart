@@ -29,7 +29,7 @@ class DashboardPage extends StatelessWidget {
                       SizedBox(height: AppSpacing.lg),
                       DashboardTransactions(),
                       SizedBox(height: AppSpacing.lg),
-                      DashboardThroughput(),
+                      // DashboardThroughput(),
                     ],
                   ),
                 ),

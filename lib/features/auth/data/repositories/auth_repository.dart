@@ -17,14 +17,31 @@ class AuthRepository {
       parser: (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
     );
 
-    if (result is ApiSuccess<LoginResponse>) {
-      final token = result.data.accessToken;
-      if (token.isNotEmpty) {
-        await _tokenStorage.saveAccessToken(token);
+    if (result case ApiSuccess<LoginResponse>(:final data)) {
+      if (data.success && data.accessToken.isNotEmpty) {
+        await _tokenStorage.saveSession(
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+        );
       }
     }
 
     return result;
+  }
+
+  Future<ApiResult<bool>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) {
+    return _apiClient.post<bool>(
+      ApiEndpoints.changePassword,
+      data: <String, dynamic>{
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      },
+      parser: (json) =>
+          (json as Map<String, dynamic>)['success'] as bool? ?? true,
+    );
   }
 
   Future<void> logout() => _tokenStorage.clear();

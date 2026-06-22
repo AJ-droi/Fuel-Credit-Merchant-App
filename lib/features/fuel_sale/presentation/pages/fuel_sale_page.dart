@@ -1,6 +1,7 @@
-import 'dart:math';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../app/router/app_router.dart';
 import '../../../../core/network/api_result.dart';
@@ -20,26 +21,32 @@ class FuelSalePage extends StatefulWidget {
 }
 
 class _FuelSalePageState extends State<FuelSalePage> {
-  static const double fuelRate = 650;
-
   final TextEditingController _nairaController = TextEditingController();
   final TextEditingController _litresController = TextEditingController();
   final TextEditingController _customerIdController = TextEditingController();
 
+  double _fuelRate = 1250;
+  String _currency = 'NGN';
   bool _updatingFromNaira = false;
   bool _updatingFromLitres = false;
+  bool _isLoadingFuelPrice = true;
   bool _isGeneratingQr = false;
   bool _qrReady = false;
+  QrPaymentData? _qrPaymentData;
+  Timer? _qrExpiryTimer;
+  Duration _qrRemaining = Duration.zero;
 
   @override
   void initState() {
     super.initState();
     _nairaController.addListener(_onNairaChanged);
     _litresController.addListener(_onLitresChanged);
+    _loadFuelPrice();
   }
 
   @override
   void dispose() {
+    _qrExpiryTimer?.cancel();
     _nairaController
       ..removeListener(_onNairaChanged)
       ..dispose();
@@ -60,7 +67,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
     if (value == null) {
       _litresController.text = '';
     } else {
-      _litresController.text = (value / fuelRate).toStringAsFixed(2);
+      _litresController.text = (value / _fuelRate).toStringAsFixed(2);
     }
     _updatingFromNaira = false;
   }
@@ -75,42 +82,67 @@ class _FuelSalePageState extends State<FuelSalePage> {
     if (value == null) {
       _nairaController.text = '';
     } else {
-      _nairaController.text = (value * fuelRate).toStringAsFixed(2);
+      _nairaController.text = (value * _fuelRate).toStringAsFixed(2);
     }
     _updatingFromLitres = false;
   }
 
+  Future<void> _loadFuelPrice() async {
+    final result = await AppServices.instance.fuelSaleRepository
+        .fetchFuelPrice();
+    if (!mounted) {
+      return;
+    }
+
+    switch (result) {
+      case ApiSuccess<FuelPriceResponse> success:
+        setState(() {
+          _fuelRate = success.data.data.fuelPricePerLitre <= 0
+              ? _fuelRate
+              : success.data.data.fuelPricePerLitre;
+          _currency = success.data.data.currency;
+          _isLoadingFuelPrice = false;
+        });
+        _onNairaChanged();
+      case ApiFailure<FuelPriceResponse> failure:
+        setState(() => _isLoadingFuelPrice = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(failure.error.message)));
+    }
+  }
+
   Future<void> _generateQr() async {
+    final amount = double.tryParse(_nairaController.text) ?? 0;
+    if (amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter an amount before generating QR.')),
+      );
+      return;
+    }
+
     setState(() => _isGeneratingQr = true);
-    final request = CreateFuelSaleRequest(
-      amount: double.tryParse(_nairaController.text) ?? 0,
-      litres: double.tryParse(_litresController.text) ?? 0,
-      customerId: _customerIdController.text.trim().isEmpty
-          ? 'WALK-IN'
-          : _customerIdController.text.trim(),
-      fuelType: 'PMS 95',
+    final request = GenerateQrRequest(amount: amount);
+    final result = await AppServices.instance.fuelSaleRepository.generateQr(
+      request,
     );
-    final result = await AppServices.instance.fuelSaleRepository.generateQr(request);
     if (!mounted) {
       return;
     }
     switch (result) {
-      case ApiSuccess<QrPaymentResponse> _:
+      case ApiSuccess<QrPaymentResponse> success:
         setState(() {
           _isGeneratingQr = false;
           _qrReady = true;
+          _qrPaymentData = success.data.data;
         });
+        _startQrTimer(success.data.data.expiresAt);
       case ApiFailure<QrPaymentResponse> failure:
         setState(() => _isGeneratingQr = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failure.error.message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(failure.error.message)));
     }
-  }
-
-  String _transactionId() {
-    final number = 10000000 + Random().nextInt(89999999);
-    return 'TXN-$number';
   }
 
   String _formattedAmount() {
@@ -121,6 +153,40 @@ class _FuelSalePageState extends State<FuelSalePage> {
   String _formattedLitres() {
     final litres = double.tryParse(_litresController.text) ?? 19.2;
     return '${litres.toStringAsFixed(1)}L';
+  }
+
+  bool get _isQrExpired {
+    if (_qrPaymentData?.expiresAt == null) {
+      return false;
+    }
+    return _qrRemaining <= Duration.zero;
+  }
+
+  void _startQrTimer(DateTime? expiresAt) {
+    _qrExpiryTimer?.cancel();
+    if (expiresAt == null) {
+      setState(() => _qrRemaining = Duration.zero);
+      return;
+    }
+
+    void syncRemaining() {
+      final remaining = expiresAt.toUtc().difference(DateTime.now().toUtc());
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _qrRemaining = remaining.isNegative ? Duration.zero : remaining;
+      });
+      if (remaining.isNegative || remaining == Duration.zero) {
+        _qrExpiryTimer?.cancel();
+      }
+    }
+
+    syncRemaining();
+    _qrExpiryTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => syncRemaining(),
+    );
   }
 
   void _openPaymentAlert(PaymentAlertStatus status) {
@@ -134,7 +200,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
         customerId: _customerIdController.text.trim().isEmpty
             ? 'KNTC-8821'
             : _customerIdController.text.trim(),
-        transactionId: _transactionId(),
+        transactionId: _qrPaymentData?.transactionId ?? 'TXN-PENDING',
       ),
     );
   }
@@ -156,7 +222,9 @@ class _FuelSalePageState extends State<FuelSalePage> {
       fuelType: 'PMS 95',
     );
 
-    final result = await AppServices.instance.fuelSaleRepository.createSale(request);
+    final result = await AppServices.instance.fuelSaleRepository.createSale(
+      request,
+    );
     if (!mounted) {
       return;
     }
@@ -206,12 +274,18 @@ class _FuelSalePageState extends State<FuelSalePage> {
                                         letterSpacing: 1.2,
                                       ),
                                     ),
-                                    Text('Fuel Sale', style: textTheme.headlineSmall),
+                                    Text(
+                                      'Fuel Sale',
+                                      style: textTheme.headlineSmall,
+                                    ),
                                   ],
                                 ),
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
                                 decoration: BoxDecoration(
                                   color: AppColors.surface,
                                   borderRadius: BorderRadius.circular(24),
@@ -230,7 +304,9 @@ class _FuelSalePageState extends State<FuelSalePage> {
                                     const SizedBox(width: AppSpacing.xs),
                                     Text(
                                       'PUMP 04 LIVE',
-                                      style: textTheme.bodyMedium?.copyWith(color: AppColors.secondary),
+                                      style: textTheme.bodyMedium?.copyWith(
+                                        color: AppColors.secondary,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -271,13 +347,26 @@ class _FuelSalePageState extends State<FuelSalePage> {
               Container(
                 width: 32,
                 height: 32,
-                decoration: const BoxDecoration(color: Color(0x33C6C0FF), shape: BoxShape.circle),
+                decoration: const BoxDecoration(
+                  color: Color(0x33C6C0FF),
+                  shape: BoxShape.circle,
+                ),
                 alignment: Alignment.center,
-                child: const Text('1', style: TextStyle(color: AppColors.primary)),
+                child: const Text(
+                  '1',
+                  style: TextStyle(color: AppColors.primary),
+                ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              Expanded(child: Text('Volume & Value', style: textTheme.headlineSmall)),
-              Text('Rate: ₦650.00/L', style: textTheme.labelSmall),
+              Expanded(
+                child: Text('Volume & Value', style: textTheme.headlineSmall),
+              ),
+              Text(
+                _isLoadingFuelPrice
+                    ? 'Loading rate...'
+                    : 'Rate: ${_currencySymbol(_currency)}${_fuelRate.toStringAsFixed(2)}/L',
+                style: textTheme.labelSmall,
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
@@ -319,9 +408,15 @@ class _FuelSalePageState extends State<FuelSalePage> {
               Container(
                 width: 32,
                 height: 32,
-                decoration: const BoxDecoration(color: Color(0x334AE176), shape: BoxShape.circle),
+                decoration: const BoxDecoration(
+                  color: Color(0x334AE176),
+                  shape: BoxShape.circle,
+                ),
                 alignment: Alignment.center,
-                child: const Text('2', style: TextStyle(color: AppColors.secondary)),
+                child: const Text(
+                  '2',
+                  style: TextStyle(color: AppColors.secondary),
+                ),
               ),
               const SizedBox(width: AppSpacing.sm),
               Text('Payment Methods', style: textTheme.headlineSmall),
@@ -366,8 +461,14 @@ class _FuelSalePageState extends State<FuelSalePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('QR Code Payment', style: textTheme.headlineSmall?.copyWith(fontSize: 18)),
-                    Text('Scan to pay via FuelFlow App', style: textTheme.labelSmall),
+                    Text(
+                      'QR Payment',
+                      style: textTheme.headlineSmall?.copyWith(fontSize: 18),
+                    ),
+                    Text(
+                      'Present this code to the customer to complete payment',
+                      style: textTheme.labelSmall,
+                    ),
                   ],
                 ),
               ),
@@ -386,39 +487,225 @@ class _FuelSalePageState extends State<FuelSalePage> {
               child: Column(
                 children: [
                   Container(
-                    width: 180,
-                    height: 180,
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                    width: 220,
+                    height: 220,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     alignment: Alignment.center,
-                    child: const Icon(Icons.qr_code_2_rounded, size: 120, color: Colors.black87),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    'Awaiting customer scan...',
-                    style: textTheme.labelSmall?.copyWith(color: AppColors.secondary),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => _openPaymentAlert(PaymentAlertStatus.failure),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFFFFB4AB)),
-                          ),
-                          child: const Text('Simulate Failure'),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.sm),
+                      child: QrImageView(
+                        data: _qrPaymentData?.qrPayload ?? '',
+                        backgroundColor: Colors.white,
+                        eyeStyle: const QrEyeStyle(
+                          color: Colors.black,
+                          eyeShape: QrEyeShape.square,
+                        ),
+                        dataModuleStyle: const QrDataModuleStyle(
+                          color: Colors.black,
+                          dataModuleShape: QrDataModuleShape.square,
                         ),
                       ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: FilledButton(
-                          onPressed: () => _openPaymentAlert(PaymentAlertStatus.success),
-                          style: FilledButton.styleFrom(backgroundColor: AppColors.secondaryContainer),
-                          child: const Text('Mark Success'),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: _isQrExpired
+                              ? const Color(0xFFFFB4AB)
+                              : AppColors.secondary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text(
+                        _isQrExpired
+                            ? 'QR expired'
+                            : 'QR active • expires in ${_formatDuration(_qrRemaining)}',
+                        style: textTheme.labelSmall?.copyWith(
+                          color: _isQrExpired
+                              ? const Color(0xFFFFB4AB)
+                              : AppColors.secondary,
                         ),
                       ),
                     ],
                   ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    _isQrExpired
+                        ? 'This code is no longer valid. Generate a fresh code to continue.'
+                        : 'This code is live and ready for customer payment.',
+                    textAlign: TextAlign.center,
+                    style: textTheme.labelSmall?.copyWith(
+                      color: AppColors.muted,
+                    ),
+                  ),
+                  if (_qrPaymentData != null) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: const Color(0x22051A24),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final cardWidth = constraints.maxWidth > 420
+                              ? (constraints.maxWidth - AppSpacing.md) / 2
+                              : constraints.maxWidth;
+                          return Wrap(
+                            spacing: AppSpacing.md,
+                            runSpacing: AppSpacing.md,
+                            children: [
+                              SizedBox(
+                                width: cardWidth,
+                                child: _qrInfoChip(
+                                  context,
+                                  label: 'Amount',
+                                  value:
+                                      '${_currencySymbol(_currency)}${_qrPaymentData!.amount.toStringAsFixed(0)}',
+                                ),
+                              ),
+                              SizedBox(
+                                width: cardWidth,
+                                child: _qrInfoChip(
+                                  context,
+                                  label: 'Litres',
+                                  value: _qrPaymentData!.fuelLitres
+                                      .toStringAsFixed(1),
+                                ),
+                              ),
+                              SizedBox(
+                                width: cardWidth,
+                                child: _qrInfoChip(
+                                  context,
+                                  label: 'Status',
+                                  value: _qrPaymentData!.status.toUpperCase(),
+                                ),
+                              ),
+                              SizedBox(
+                                width: cardWidth,
+                                child: _qrInfoChip(
+                                  context,
+                                  label: 'Txn',
+                                  value: _compactTransactionId(
+                                    _qrPaymentData!.transactionId,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _isQrExpired
+                            ? const Color(0x1AFFB4AB)
+                            : const Color(0x1A4AE176),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: _isQrExpired
+                              ? const Color(0x44FFB4AB)
+                              : const Color(0x444AE176),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            _isQrExpired
+                                ? Icons.timer_off_rounded
+                                : Icons.verified_user_outlined,
+                            size: 18,
+                            color: _isQrExpired
+                                ? const Color(0xFFFFB4AB)
+                                : AppColors.secondary,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text(
+                              _isQrExpired
+                                  ? 'The payment window has closed for this code.'
+                                  : 'The payment window remains open until the timer runs out.',
+                              style: textTheme.labelSmall?.copyWith(
+                                color: _isQrExpired
+                                    ? const Color(0xFFFFB4AB)
+                                    : AppColors.secondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: AppSpacing.md),
+                  if (_isQrExpired)
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: _generateQr,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.secondaryContainer,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppSpacing.md,
+                          ),
+                        ),
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Generate New Code'),
+                      ),
+                    )
+                  else
+                    Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.icon(
+                            onPressed: () =>
+                                _openPaymentAlert(PaymentAlertStatus.success),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.secondaryContainer,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: AppSpacing.md,
+                              ),
+                            ),
+                            icon: const Icon(Icons.check_circle_outline),
+                            label: const Text('Complete Payment'),
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () =>
+                                _openPaymentAlert(PaymentAlertStatus.failure),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0x66FFB4AB)),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: AppSpacing.md,
+                              ),
+                              foregroundColor: const Color(0xFFFFB4AB),
+                            ),
+                            icon: const Icon(Icons.error_outline_rounded),
+                            label: const Text('Decline Payment'),
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -429,7 +716,9 @@ class _FuelSalePageState extends State<FuelSalePage> {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
-                  gradient: const LinearGradient(colors: [AppColors.primaryContainer, AppColors.secondary]),
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primaryContainer, AppColors.secondary],
+                  ),
                 ),
                 child: FilledButton.icon(
                   onPressed: _isGeneratingQr ? null : _generateQr,
@@ -437,7 +726,9 @@ class _FuelSalePageState extends State<FuelSalePage> {
                     backgroundColor: Colors.transparent,
                     disabledBackgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.md,
+                    ),
                   ),
                   icon: Icon(
                     _isGeneratingQr ? Icons.sync : Icons.qr_code_scanner,
@@ -478,8 +769,14 @@ class _FuelSalePageState extends State<FuelSalePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Fuel Credit ID', style: textTheme.headlineSmall?.copyWith(fontSize: 18)),
-                    Text('Corporate or Fleet Customer ID', style: textTheme.labelSmall),
+                    Text(
+                      'Fuel Credit ID',
+                      style: textTheme.headlineSmall?.copyWith(fontSize: 18),
+                    ),
+                    Text(
+                      'Corporate or Fleet Customer ID',
+                      style: textTheme.labelSmall,
+                    ),
                   ],
                 ),
               ),
@@ -512,12 +809,20 @@ class _FuelSalePageState extends State<FuelSalePage> {
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: AppColors.primary),
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              icon: const Icon(Icons.verified_user_rounded, color: AppColors.primary),
+              icon: const Icon(
+                Icons.verified_user_rounded,
+                color: AppColors.primary,
+              ),
               label: Text(
                 'Process ID Payment',
-                style: textTheme.bodyLarge?.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700),
+                style: textTheme.bodyLarge?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
@@ -536,7 +841,10 @@ class _FuelSalePageState extends State<FuelSalePage> {
         ),
         const SizedBox(height: AppSpacing.xs),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
           decoration: BoxDecoration(
             color: const Color(0x260D1C2D),
             borderRadius: BorderRadius.circular(8),
@@ -544,14 +852,24 @@ class _FuelSalePageState extends State<FuelSalePage> {
           ),
           child: Row(
             children: [
-              Text('₦', style: textTheme.headlineSmall?.copyWith(color: AppColors.primary)),
+              Text(
+                '₦',
+                style: textTheme.headlineSmall?.copyWith(
+                  color: AppColors.primary,
+                ),
+              ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: TextField(
                   controller: _nairaController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   style: textTheme.displayLarge,
-                  decoration: const InputDecoration(border: InputBorder.none, hintText: '0.00'),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    hintText: '0.00',
+                  ),
                 ),
               ),
             ],
@@ -571,7 +889,10 @@ class _FuelSalePageState extends State<FuelSalePage> {
         ),
         const SizedBox(height: AppSpacing.xs),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
           decoration: BoxDecoration(
             color: const Color(0x260D1C2D),
             borderRadius: BorderRadius.circular(8),
@@ -582,17 +903,62 @@ class _FuelSalePageState extends State<FuelSalePage> {
               Expanded(
                 child: TextField(
                   controller: _litresController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   style: textTheme.displayLarge,
-                  decoration: const InputDecoration(border: InputBorder.none, hintText: '0.00'),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    hintText: '0.00',
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              Text('L', style: textTheme.bodyMedium?.copyWith(color: AppColors.secondary)),
+              Text(
+                'L',
+                style: textTheme.bodyMedium?.copyWith(
+                  color: AppColors.secondary,
+                ),
+              ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _qrInfoChip(
+    BuildContext context, {
+    required String label,
+    required String value,
+  }) {
+    final textTheme = Theme.of(context).textTheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            label.toUpperCase(),
+            style: textTheme.labelSmall?.copyWith(color: AppColors.muted),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            value,
+            style: textTheme.bodyMedium?.copyWith(color: Colors.white),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -616,16 +982,44 @@ class _TopBar extends StatelessWidget {
           const Icon(Icons.local_gas_station_rounded, color: AppColors.primary),
           const SizedBox(width: AppSpacing.xs),
           Text(
-            'FUELFLOW',
-            style: textTheme.headlineSmall?.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700),
+            'FUELCREDIT',
+            style: textTheme.headlineSmall?.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const Spacer(),
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.notifications_none_rounded, color: AppColors.primary),
+            icon: const Icon(
+              Icons.notifications_none_rounded,
+              color: AppColors.primary,
+            ),
           ),
         ],
       ),
     );
   }
+}
+
+String _currencySymbol(String currency) {
+  switch (currency.toUpperCase()) {
+    case 'NGN':
+      return '₦';
+    default:
+      return currency.toUpperCase();
+  }
+}
+
+String _formatDuration(Duration duration) {
+  final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+  final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+  return '$minutes:$seconds';
+}
+
+String _compactTransactionId(String transactionId) {
+  if (transactionId.length <= 12) {
+    return transactionId;
+  }
+  return '${transactionId.substring(0, 6)}...${transactionId.substring(transactionId.length - 4)}';
 }

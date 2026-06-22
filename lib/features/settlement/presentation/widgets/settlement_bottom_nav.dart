@@ -59,7 +59,18 @@ class SettlementBottomNav extends StatelessWidget {
             active: false,
             onTap: () => Navigator.of(context).pushReplacementNamed(AppRouter.fuelSale),
           ),
-          navItem(icon: Icons.history_rounded, label: 'History', active: false, onTap: () {}),
+          navItem(
+            icon: Icons.history_rounded,
+            label: 'History',
+            active: false,
+            onTap: () => Navigator.of(context).pushNamed(AppRouter.transactions),
+          ),
+          navItem(
+            icon: Icons.group_rounded,
+            label: 'Staff',
+            active: false,
+            onTap: () => Navigator.of(context).pushNamed(AppRouter.management),
+          ),
           navItem(
             icon: Icons.account_balance_wallet_rounded,
             label: 'Settlement',

@@ -1,19 +1,110 @@
 class DashboardSummary {
   const DashboardSummary({
-    required this.pumpPrice,
-    required this.totalLitres,
-    required this.totalAmount,
+    required this.success,
+    required this.message,
+    required this.data,
   });
 
-  final String pumpPrice;
-  final String totalLitres;
-  final String totalAmount;
+  final bool success;
+  final String message;
+  final MerchantDashboardData data;
 
   factory DashboardSummary.fromJson(Map<String, dynamic> json) {
     return DashboardSummary(
-      pumpPrice: (json['pumpPrice'] ?? '₦650/L').toString(),
-      totalLitres: (json['totalLitres'] ?? '1,240L').toString(),
-      totalAmount: (json['totalAmount'] ?? '₦806,000').toString(),
+      success: json['success'] == true,
+      message: (json['message'] ?? '').toString(),
+      data: MerchantDashboardData.fromJson(
+        (json['data'] as Map<String, dynamic>? ?? <String, dynamic>{}),
+      ),
+    );
+  }
+}
+
+class MerchantDashboardData {
+  const MerchantDashboardData({
+    required this.merchantId,
+    required this.businessName,
+    required this.today,
+    required this.pendingSettlements,
+    required this.lastPaidSettlement,
+  });
+
+  final String merchantId;
+  final String businessName;
+  final DashboardToday today;
+  final DashboardPendingSettlements pendingSettlements;
+  final DashboardSettlement? lastPaidSettlement;
+
+  factory MerchantDashboardData.fromJson(Map<String, dynamic> json) {
+    return MerchantDashboardData(
+      merchantId: (json['merchantId'] ?? '').toString(),
+      businessName: (json['businessName'] ?? '').toString(),
+      today: DashboardToday.fromJson(
+        (json['today'] as Map<String, dynamic>? ?? <String, dynamic>{}),
+      ),
+      pendingSettlements: DashboardPendingSettlements.fromJson(
+        (json['pendingSettlements'] as Map<String, dynamic>? ?? <String, dynamic>{}),
+      ),
+      lastPaidSettlement: json['lastPaidSettlement'] is Map<String, dynamic>
+          ? DashboardSettlement.fromJson(json['lastPaidSettlement'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+}
+
+class DashboardToday {
+  const DashboardToday({
+    required this.salesCount,
+    required this.grossAmount,
+    required this.unsettledAmount,
+  });
+
+  final int salesCount;
+  final double grossAmount;
+  final double unsettledAmount;
+
+  factory DashboardToday.fromJson(Map<String, dynamic> json) {
+    return DashboardToday(
+      salesCount: _toInt(json['salesCount']),
+      grossAmount: _toDouble(json['grossAmount']),
+      unsettledAmount: _toDouble(json['unsettledAmount']),
+    );
+  }
+}
+
+class DashboardPendingSettlements {
+  const DashboardPendingSettlements({
+    required this.count,
+    required this.totalAmount,
+  });
+
+  final int count;
+  final double totalAmount;
+
+  factory DashboardPendingSettlements.fromJson(Map<String, dynamic> json) {
+    return DashboardPendingSettlements(
+      count: _toInt(json['count']),
+      totalAmount: _toDouble(json['totalAmount']),
+    );
+  }
+}
+
+class DashboardSettlement {
+  const DashboardSettlement({
+    required this.referenceId,
+    required this.amount,
+    required this.paidAt,
+  });
+
+  final String referenceId;
+  final double amount;
+  final DateTime? paidAt;
+
+  factory DashboardSettlement.fromJson(Map<String, dynamic> json) {
+    return DashboardSettlement(
+      referenceId: (json['referenceId'] ?? '').toString(),
+      amount: _toDouble(json['amount']),
+      paidAt: DateTime.tryParse((json['paidAt'] ?? '').toString()),
     );
   }
 }
@@ -42,4 +133,21 @@ class DashboardTransaction {
       timeAgo: (json['timeAgo'] ?? '').toString(),
     );
   }
+}
+
+int _toInt(dynamic value) {
+  if (value is int) {
+    return value;
+  }
+  if (value is num) {
+    return value.toInt();
+  }
+  return int.tryParse(value?.toString() ?? '') ?? 0;
+}
+
+double _toDouble(dynamic value) {
+  if (value is num) {
+    return value.toDouble();
+  }
+  return double.tryParse(value?.toString() ?? '') ?? 0;
 }

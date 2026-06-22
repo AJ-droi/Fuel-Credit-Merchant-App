@@ -17,12 +17,18 @@ class AccountBottomNav extends StatelessWidget {
       required bool active,
       required VoidCallback onTap,
     }) {
+      final labelStyle = textTheme.labelSmall?.copyWith(
+        color: active ? AppColors.primary : AppColors.muted,
+        fontSize: 10,
+        height: 1,
+      );
+
       return Expanded(
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(14),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+            padding: const EdgeInsets.symmetric(vertical: 6),
             decoration: BoxDecoration(
               color: active ? const Color(0x33C6C0FF) : Colors.transparent,
               borderRadius: BorderRadius.circular(14),
@@ -30,12 +36,18 @@ class AccountBottomNav extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: active ? AppColors.primary : AppColors.muted),
+                Icon(
+                  icon,
+                  size: 20,
+                  color: active ? AppColors.primary : AppColors.muted,
+                ),
+                const SizedBox(height: 2),
                 Text(
                   label,
-                  style: textTheme.labelSmall?.copyWith(
-                    color: active ? AppColors.primary : AppColors.muted,
-                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: labelStyle,
                 ),
               ],
             ),
@@ -46,7 +58,12 @@ class AccountBottomNav extends StatelessWidget {
 
     return Container(
       height: 78,
-      padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.sm, AppSpacing.sm, 10),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm,
+        AppSpacing.sm,
+        AppSpacing.sm,
+        10,
+      ),
       decoration: const BoxDecoration(
         color: Color(0xCC010F1F),
         border: Border(top: BorderSide(color: Colors.white10)),
@@ -57,19 +74,31 @@ class AccountBottomNav extends StatelessWidget {
             icon: Icons.dashboard_rounded,
             label: 'Dashboard',
             active: false,
-            onTap: () => Navigator.of(context).pushReplacementNamed(AppRouter.dashboard),
+            onTap: () =>
+                Navigator.of(context).pushReplacementNamed(AppRouter.dashboard),
           ),
           navItem(
             icon: Icons.ev_station_rounded,
-            label: 'Sales',
+            label: 'Fuel Sale',
             active: false,
-            onTap: () => Navigator.of(context).pushReplacementNamed(AppRouter.fuelSale),
+            onTap: () =>
+                Navigator.of(context).pushReplacementNamed(AppRouter.fuelSale),
+          ),
+          navItem(
+            icon: Icons.group_rounded,
+            label: 'Staff',
+            active: false,
+            onTap: () => Navigator.of(
+              context,
+            ).pushReplacementNamed(AppRouter.management),
           ),
           navItem(
             icon: Icons.account_balance_wallet_rounded,
             label: 'Settlements',
             active: false,
-            onTap: () => Navigator.of(context).pushReplacementNamed(AppRouter.settlement),
+            onTap: () => Navigator.of(
+              context,
+            ).pushReplacementNamed(AppRouter.settlement),
           ),
           navItem(
             icon: Icons.person,

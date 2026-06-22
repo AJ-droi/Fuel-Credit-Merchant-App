@@ -1,10 +1,9 @@
-final class ApiConfig {
-  const ApiConfig._();
+class AppConfig {
+  AppConfig._();
 
-  // Update with your backend host, e.g. https://api.fuelops.ng
-  static const String baseUrl = String.fromEnvironment(
+  static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://api.example.com',
+    defaultValue: 'https://fuel-lending-app.onrender.com/api/v1',
   );
 
   static const Duration connectTimeout = Duration(seconds: 20);
