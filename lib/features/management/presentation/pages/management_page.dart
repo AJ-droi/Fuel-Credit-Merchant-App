@@ -99,7 +99,7 @@ class _ManagementPageState extends State<ManagementPage> {
               120,
             ),
             itemCount: branches.length,
-            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
+            separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
             itemBuilder: (context, index) {
               final branch = branches[index];
               final subtitle = [
@@ -109,7 +109,7 @@ class _ManagementPageState extends State<ManagementPage> {
               ].join(' • ');
 
               return ListTile(
-                tileColor: const Color(0x33C6C0FF).withValues(alpha: 0.05),
+                tileColor: const Color(0x33C6C0FF).withOpacity(0.05),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -132,7 +132,7 @@ class _ManagementPageState extends State<ManagementPage> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.12),
+                          color: AppColors.primary.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: const Text(
@@ -214,7 +214,7 @@ class _ManagementPageState extends State<ManagementPage> {
               120,
             ),
             itemCount: sellers.length,
-            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
+            separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
             itemBuilder: (context, index) {
               final seller = sellers[index];
               final title = seller.fullName.isNotEmpty
@@ -228,7 +228,7 @@ class _ManagementPageState extends State<ManagementPage> {
                   : seller.email;
 
               return ListTile(
-                tileColor: const Color(0x33C6C0FF).withValues(alpha: 0.05),
+                tileColor: const Color(0x33C6C0FF).withOpacity(0.05),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -420,7 +420,7 @@ class _ManagementPageState extends State<ManagementPage> {
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         DropdownButtonFormField<String>(
-                          initialValue: selectedBranchId,
+                          value: selectedBranchId,
                           dropdownColor: const Color(0xFF010F1F),
                           style: const TextStyle(color: Colors.white),
                           decoration: _inviteDecoration('Branch'),
@@ -543,7 +543,7 @@ class _BranchStatusChip extends StatelessWidget {
         ),
       ),
       backgroundColor: (isActive ? Colors.greenAccent : Colors.white)
-          .withValues(alpha: 0.1),
+          .withOpacity(0.1),
       side: BorderSide.none,
     );
   }

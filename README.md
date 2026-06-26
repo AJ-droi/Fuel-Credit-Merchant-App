@@ -1,17 +1,53 @@
-# fuel_credit_merchant_app
+# Fuel Credit Merchant App
 
-A new Flutter project.
+Flutter mobile app for fuel station merchants — login, sell fuel via QR/purchase ID, manage branches and sellers, view transactions, and request settlements.
 
-## Getting Started
+**Production API:** `https://fuel-lending-app.onrender.com/api/v1`
 
-This project is a starting point for a Flutter application.
+## Install on Android
 
-A few resources to get you started if this is your first Flutter project:
+Release APK:
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```
+build/app/outputs/flutter-apk/app-release.apk
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Sideload
+
+1. Copy `app-release.apk` to your phone.
+2. Open the file and install (allow unknown sources if prompted).
+3. Open **Fuel Credit Merchant**.
+
+### USB install
+
+```bash
+flutter install --release
+```
+
+## Install on iPhone
+
+```bash
+cd ios && pod install && cd ..
+flutter run --release
+```
+
+## Run in development
+
+```bash
+flutter pub get
+flutter run --dart-define=API_BASE_URL=https://fuel-lending-app.onrender.com/api/v1
+```
+
+## Build release APK
+
+```bash
+flutter build apk --release --dart-define=API_BASE_URL=https://fuel-lending-app.onrender.com/api/v1
+```
+
+## Test flow
+
+1. **Login** with merchant admin or seller credentials.
+2. **Sell fuel** — generate QR or accept purchase ID from customer.
+3. **View transactions** on the dashboard.
+4. **Manage** branches and invite sellers (admin).
+5. **Request settlement** for collected sales.

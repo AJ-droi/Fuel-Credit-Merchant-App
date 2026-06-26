@@ -108,9 +108,9 @@ class _TransactionCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.14),
+              color: statusColor.withOpacity(0.14),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: statusColor.withValues(alpha: 0.35)),
+              border: Border.all(color: statusColor.withOpacity(0.35)),
             ),
             child: Icon(
               item.isSuccessful
@@ -164,8 +164,8 @@ class _TransactionCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(30),
-                  color: statusColor.withValues(alpha: 0.12),
-                  border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+                  color: statusColor.withOpacity(0.12),
+                  border: Border.all(color: statusColor.withOpacity(0.3)),
                 ),
                 child: Text(
                   _statusLabel(item.status),
