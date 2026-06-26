@@ -171,9 +171,7 @@ class _LoginFormCardState extends State<LoginFormCard> {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    gradient: const LinearGradient(
-                      colors: [AppColors.primary, AppColors.primaryContainer],
-                    ),
+                    gradient: AppColors.primaryGradient,
                   ),
                   child: FilledButton(
                     onPressed: _isSubmitting ? null : _submit,
@@ -204,21 +202,6 @@ class _LoginFormCardState extends State<LoginFormCard> {
               ),
             ],
           ),
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        Text(
-          'Don\'t have an account yet?',
-          style: textTheme.labelSmall,
-        ),
-        const SizedBox(height: AppSpacing.md),
-        OutlinedButton(
-          onPressed: () {},
-          style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: AppColors.borderStrong),
-            minimumSize: const Size(double.infinity, 50),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-          child: Text('Request Onboarding', style: textTheme.headlineSmall),
         ),
       ],
     );

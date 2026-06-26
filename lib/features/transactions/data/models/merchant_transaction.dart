@@ -38,7 +38,7 @@ class MerchantTransaction {
         merchantSnapshot is Map<String, dynamic> ? merchantSnapshot : <String, dynamic>{};
 
     return MerchantTransaction(
-      id: (json['_id'] ?? '').toString(),
+      id: (json['id'] ?? json['_id'] ?? '').toString(),
       disbursementMethod: (json['disbursementMethod'] ?? '').toString(),
       fuelLitres: _toDouble(json['fuelLitres']),
       pricePerLitre: _toDouble(json['pricePerLitre']),

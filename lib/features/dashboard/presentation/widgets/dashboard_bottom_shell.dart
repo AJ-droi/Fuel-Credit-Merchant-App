@@ -24,17 +24,19 @@ class DashboardBottomShell extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
             decoration: BoxDecoration(
-              color: active ? AppColors.primaryLight.withOpacity(0.4) : Colors.transparent,
+              color: active ? AppColors.primaryContainer.withOpacity(0.12) : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
+              border: active ? Border.all(color: AppColors.primary.withOpacity(0.35)) : null,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: active ? AppColors.secondary : AppColors.muted),
+                Icon(icon, color: active ? AppColors.primaryContainer : AppColors.muted),
                 Text(
                   label,
                   style: textTheme.labelSmall?.copyWith(
-                    color: active ? AppColors.secondary : AppColors.muted,
+                    color: active ? AppColors.primaryContainer : AppColors.muted,
+                    fontWeight: active ? FontWeight.w700 : FontWeight.w600,
                   ),
                 ),
               ],
@@ -107,14 +109,12 @@ class DashboardBottomShell extends StatelessWidget {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(40),
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primary, AppColors.primaryContainer],
-                  ),
-                  boxShadow: const [
+                  gradient: AppColors.primaryGradient,
+                  boxShadow: [
                     BoxShadow(
-                      color: Color(0x335FAF7A),
+                      color: AppColors.primary.withOpacity(0.45),
                       blurRadius: 24,
-                      offset: Offset(0, 8),
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),

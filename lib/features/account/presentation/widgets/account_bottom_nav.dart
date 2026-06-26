@@ -18,9 +18,10 @@ class AccountBottomNav extends StatelessWidget {
       required VoidCallback onTap,
     }) {
       final labelStyle = textTheme.labelSmall?.copyWith(
-        color: active ? AppColors.primary : AppColors.muted,
+        color: active ? AppColors.primaryContainer : AppColors.muted,
         fontSize: 10,
         height: 1,
+        fontWeight: active ? FontWeight.w700 : FontWeight.w600,
       );
 
       return Expanded(
@@ -30,8 +31,9 @@ class AccountBottomNav extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 6),
             decoration: BoxDecoration(
-              color: active ? AppColors.primaryLight.withOpacity(0.4) : Colors.transparent,
+              color: active ? AppColors.primaryContainer.withOpacity(0.12) : Colors.transparent,
               borderRadius: BorderRadius.circular(14),
+              border: active ? Border.all(color: AppColors.primary.withOpacity(0.35)) : null,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -39,7 +41,7 @@ class AccountBottomNav extends StatelessWidget {
                 Icon(
                   icon,
                   size: 20,
-                  color: active ? AppColors.primary : AppColors.muted,
+                  color: active ? AppColors.primaryContainer : AppColors.muted,
                 ),
                 const SizedBox(height: 2),
                 Text(

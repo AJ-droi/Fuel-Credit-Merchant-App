@@ -61,6 +61,42 @@ class ApiClient {
     }
   }
 
+  Future<ApiResult<T>> patch<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    required T Function(dynamic json) parser,
+  }) async {
+    try {
+      final response = await _dio.patch<dynamic>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+      );
+      return ApiSuccess<T>(parser(response.data));
+    } on DioException catch (error) {
+      return ApiFailure<T>(ApiError.fromDioException(error));
+    }
+  }
+
+  Future<ApiResult<T>> delete<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    required T Function(dynamic json) parser,
+  }) async {
+    try {
+      final response = await _dio.delete<dynamic>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+      );
+      return ApiSuccess<T>(parser(response.data));
+    } on DioException catch (error) {
+      return ApiFailure<T>(ApiError.fromDioException(error));
+    }
+  }
+
   static Dio createDio({List<Interceptor> interceptors = const []}) {
     final dio = Dio(
       BaseOptions(

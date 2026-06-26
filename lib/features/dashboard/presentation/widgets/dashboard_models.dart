@@ -8,6 +8,7 @@ class KpiCardModel {
     required this.meta,
     required this.icon,
     required this.iconColor,
+    this.backgroundColor,
     this.chip,
   });
 
@@ -17,6 +18,7 @@ class KpiCardModel {
   final String meta;
   final IconData icon;
   final Color iconColor;
+  final Color? backgroundColor;
   final String? chip;
 }
 

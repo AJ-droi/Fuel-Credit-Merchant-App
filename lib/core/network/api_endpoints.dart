@@ -20,4 +20,10 @@ final class ApiEndpoints {
   static const String merchantBranches = '/merchant/branches';
   static const String merchantSellers = '/merchant/sellers';
   static const String merchantInviteSeller = '/merchant/sellers/invite';
+  static const String merchantSales = '/merchant/sales';
+
+  static String merchantBranch(String branchId) => '/merchant/branches/$branchId';
+  static String merchantSeller(String sellerId) => '/merchant/sellers/$sellerId';
+  static String merchantSellerSales(String sellerId) =>
+      '/merchant/sellers/$sellerId/sales';
 }

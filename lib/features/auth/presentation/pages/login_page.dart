@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../widgets/login_desktop_panels.dart';
 import '../widgets/login_form_card.dart';
 import '../widgets/login_header.dart';
 
@@ -11,8 +10,6 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-
     return Scaffold(
       body: Stack(
         children: [
@@ -35,7 +32,6 @@ class LoginPage extends StatelessWidget {
               ),
             ),
           ),
-          if (size.width >= 1100) const LoginDesktopPanels(),
         ],
       ),
     );
@@ -52,7 +48,7 @@ class _MeshBackground extends StatelessWidget {
         gradient: RadialGradient(
           center: Alignment(-0.7, -0.5),
           radius: 1.2,
-          colors: [Color(0x235FAF7A), Colors.transparent],
+          colors: [Color(0x550FA958), Colors.transparent],
           stops: [0, 0.7],
         ),
       ),
@@ -61,7 +57,7 @@ class _MeshBackground extends StatelessWidget {
           gradient: RadialGradient(
             center: Alignment(0.75, 0.7),
             radius: 1,
-            colors: [Color(0x205FAF7A), Colors.transparent],
+            colors: [Color(0x45FF3D7A), Colors.transparent],
             stops: [0, 0.7],
           ),
         ),

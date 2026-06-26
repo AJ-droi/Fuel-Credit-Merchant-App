@@ -53,9 +53,9 @@ class _DashboardTopBarState extends State<DashboardTopBar> {
                 decoration: BoxDecoration(
                   color: AppColors.primaryContainer,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.4)),
                 ),
-                child: Icon(Icons.person, color: AppColors.primaryContainer, size: 20),
+                child: const Icon(Icons.person, color: AppColors.onPrimary, size: 20),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -66,8 +66,8 @@ class _DashboardTopBarState extends State<DashboardTopBar> {
                     Text(
                       'FUELCREDIT',
                       style: textTheme.headlineSmall?.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w800,
+                        color: AppColors.primaryContainer,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
                     Row(

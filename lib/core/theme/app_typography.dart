@@ -18,14 +18,14 @@ final class AppTypography {
       ),
       headlineLarge: GoogleFonts.inter(
         fontSize: 32,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w800,
         height: 40 / 32,
         letterSpacing: -0.32,
         color: AppColors.onBackground,
       ),
       headlineSmall: GoogleFonts.inter(
         fontSize: 24,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
         height: 32 / 24,
         color: AppColors.onBackground,
       ),
@@ -42,7 +42,7 @@ final class AppTypography {
       ),
       labelSmall: GoogleFonts.inter(
         fontSize: 12,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         height: 16 / 12,
         color: AppColors.muted,
       ),

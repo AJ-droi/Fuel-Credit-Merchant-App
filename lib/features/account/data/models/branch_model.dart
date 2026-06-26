@@ -75,3 +75,101 @@ class BranchModel {
     return parts.join(', ');
   }
 }
+
+class BranchStaffMember {
+  const BranchStaffMember({
+    required this.id,
+    required this.firstName,
+    required this.lastName,
+    required this.email,
+    required this.phone,
+    required this.accountStatus,
+  });
+
+  final String id;
+  final String firstName;
+  final String lastName;
+  final String email;
+  final String phone;
+  final String accountStatus;
+
+  factory BranchStaffMember.fromJson(Map<String, dynamic> json) {
+    return BranchStaffMember(
+      id: json['id']?.toString() ?? '',
+      firstName: json['firstName']?.toString() ?? '',
+      lastName: json['lastName']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      phone: json['phone']?.toString() ?? '',
+      accountStatus: json['accountStatus']?.toString() ?? 'active',
+    );
+  }
+
+  String get fullName {
+    final parts = <String>[
+      if (firstName.isNotEmpty) firstName,
+      if (lastName.isNotEmpty) lastName,
+    ];
+    return parts.join(' ').trim();
+  }
+}
+
+class BranchDetailModel extends BranchModel {
+  const BranchDetailModel({
+    required super.id,
+    required super.name,
+    required super.address,
+    required super.city,
+    required super.lga,
+    required super.state,
+    required super.landmark,
+    required super.status,
+    required super.isPrimary,
+    required super.createdAt,
+    required super.updatedAt,
+    required this.staffCount,
+    required this.salesCount,
+    required this.grossAmount,
+    required this.staff,
+  });
+
+  final int staffCount;
+  final int salesCount;
+  final double grossAmount;
+  final List<BranchStaffMember> staff;
+
+  factory BranchDetailModel.fromJson(Map<String, dynamic> json) {
+    final staffRaw = json['staff'];
+    return BranchDetailModel(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      address: json['address']?.toString() ?? '',
+      city: json['city']?.toString() ?? '',
+      lga: json['lga']?.toString() ?? '',
+      state: json['state']?.toString() ?? '',
+      landmark: json['landmark']?.toString() ?? '',
+      status: json['status']?.toString() ?? '',
+      isPrimary: json['isPrimary'] as bool? ?? false,
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
+      updatedAt: DateTime.tryParse(json['updatedAt']?.toString() ?? ''),
+      staffCount: _toInt(json['staffCount']),
+      salesCount: _toInt(json['salesCount']),
+      grossAmount: _toDouble(json['grossAmount']),
+      staff: staffRaw is List
+          ? staffRaw
+                .whereType<Map<String, dynamic>>()
+                .map(BranchStaffMember.fromJson)
+                .toList()
+          : const [],
+    );
+  }
+
+  static int _toInt(dynamic value) {
+    if (value is int) return value;
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  static double _toDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? 0;
+  }
+}

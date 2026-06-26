@@ -32,6 +32,7 @@ class SellerModel {
   final String phone;
   final String branchId;
   final String branchName;
+  final String accountStatus;
   final DateTime? createdAt;
 
   const SellerModel({
@@ -42,6 +43,7 @@ class SellerModel {
     required this.phone,
     required this.branchId,
     required this.branchName,
+    required this.accountStatus,
     required this.createdAt,
   });
 
@@ -54,9 +56,12 @@ class SellerModel {
       phone: json['phone']?.toString() ?? '',
       branchId: json['branchId']?.toString() ?? '',
       branchName: json['branchName']?.toString() ?? '',
+      accountStatus: json['accountStatus']?.toString() ?? 'active',
       createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
     );
   }
+
+  bool get isActive => accountStatus.toLowerCase() == 'active';
 
   String get fullName {
     final parts = <String>[

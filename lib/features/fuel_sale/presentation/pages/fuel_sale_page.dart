@@ -281,36 +281,6 @@ class _FuelSalePageState extends State<FuelSalePage> {
                                   ],
                                 ),
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius: BorderRadius.circular(24),
-                                  border: Border.all(color: AppColors.border),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 8,
-                                      height: 8,
-                                      decoration: const BoxDecoration(
-                                        color: AppColors.secondary,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                    const SizedBox(width: AppSpacing.xs),
-                                    Text(
-                                      'PUMP 04 LIVE',
-                                      style: textTheme.bodyMedium?.copyWith(
-                                        color: AppColors.secondary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ],
                           ),
                           const SizedBox(height: AppSpacing.lg),
@@ -477,36 +447,33 @@ class _FuelSalePageState extends State<FuelSalePage> {
           if (_qrReady) ...[
             const SizedBox(height: AppSpacing.md),
             Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               width: double.infinity,
               decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.borderStrong),
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 children: [
                   Container(
-                    width: 220,
-                    height: 220,
+                    width: 280,
+                    height: 280,
+                    padding: const EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     alignment: Alignment.center,
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.sm),
-                      child: QrImageView(
-                        data: _qrPaymentData?.qrPayload ?? '',
-                        backgroundColor: AppColors.surface,
-                        eyeStyle: const QrEyeStyle(
-                          color: Colors.black,
-                          eyeShape: QrEyeShape.square,
-                        ),
-                        dataModuleStyle: const QrDataModuleStyle(
-                          color: Colors.black,
-                          dataModuleShape: QrDataModuleShape.square,
-                        ),
+                    child: QrImageView(
+                      data: _qrPaymentData?.qrPayload ?? '',
+                      backgroundColor: Colors.white,
+                      eyeStyle: const QrEyeStyle(
+                        color: AppColors.primary,
+                        eyeShape: QrEyeShape.square,
+                      ),
+                      dataModuleStyle: const QrDataModuleStyle(
+                        color: AppColors.primary,
+                        dataModuleShape: QrDataModuleShape.square,
                       ),
                     ),
                   ),
@@ -520,7 +487,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                         decoration: BoxDecoration(
                           color: _isQrExpired
                               ? const Color(0xFFFFB4AB)
-                              : AppColors.secondary,
+                              : Colors.white,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -532,7 +499,8 @@ class _FuelSalePageState extends State<FuelSalePage> {
                         style: textTheme.labelSmall?.copyWith(
                           color: _isQrExpired
                               ? const Color(0xFFFFB4AB)
-                              : AppColors.secondary,
+                              : Colors.white,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -544,7 +512,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                         : 'This code is live and ready for customer payment.',
                     textAlign: TextAlign.center,
                     style: textTheme.labelSmall?.copyWith(
-                      color: AppColors.muted,
+                      color: Colors.white.withOpacity(0.85),
                     ),
                   ),
                   if (_qrPaymentData != null) ...[
@@ -657,16 +625,28 @@ class _FuelSalePageState extends State<FuelSalePage> {
                   if (_isQrExpired)
                     SizedBox(
                       width: double.infinity,
+                      height: 56,
                       child: FilledButton.icon(
                         onPressed: _generateQr,
                         style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.secondaryContainer,
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: AppColors.onPrimary,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           padding: const EdgeInsets.symmetric(
                             vertical: AppSpacing.md,
                           ),
                         ),
-                        icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('Generate New Code'),
+                        icon: const Icon(Icons.refresh_rounded, size: 24),
+                        label: const Text(
+                          'Generate New Code',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
                       ),
                     )
                   else
@@ -713,33 +693,33 @@ class _FuelSalePageState extends State<FuelSalePage> {
             const SizedBox(height: AppSpacing.md),
             SizedBox(
               width: double.infinity,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primaryContainer, AppColors.secondary],
+              height: 64,
+              child: FilledButton.icon(
+                onPressed: _isGeneratingQr ? null : _generateQr,
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
+                  foregroundColor: AppColors.onPrimary,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.lg,
                   ),
                 ),
-                child: FilledButton.icon(
-                  onPressed: _isGeneratingQr ? null : _generateQr,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    disabledBackgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.md,
-                    ),
-                  ),
-                  icon: Icon(
-                    _isGeneratingQr ? Icons.sync : Icons.qr_code_scanner,
-                    color: AppColors.onPrimaryContainer,
-                  ),
-                  label: Text(
-                    _isGeneratingQr ? 'Generating...' : 'Generate Payment QR',
-                    style: textTheme.bodyLarge?.copyWith(
-                      color: AppColors.onPrimaryContainer,
-                      fontWeight: FontWeight.w700,
-                    ),
+                icon: Icon(
+                  _isGeneratingQr ? Icons.sync : Icons.qr_code_scanner,
+                  size: 28,
+                  color: AppColors.onPrimary,
+                ),
+                label: Text(
+                  _isGeneratingQr ? 'Generating...' : 'Generate Payment QR',
+                  style: textTheme.titleMedium?.copyWith(
+                    color: AppColors.onPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 18,
                   ),
                 ),
               ),

@@ -16,8 +16,13 @@ class LoginHeader extends StatelessWidget {
         GlassCard(
           padding: const EdgeInsets.all(AppSpacing.md),
           borderRadius: BorderRadius.circular(14),
-          child: const Icon(Icons.local_gas_station_rounded,
-              color: AppColors.primary, size: 40),
+          backgroundColor: AppColors.surfaceBright,
+          borderColor: AppColors.primary.withOpacity(0.35),
+          child: const Icon(
+            Icons.local_gas_station_rounded,
+            color: AppColors.primaryContainer,
+            size: 40,
+          ),
         ),
         const SizedBox(height: AppSpacing.md),
         RichText(

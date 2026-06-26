@@ -159,7 +159,15 @@ class _ManagementPageState extends State<ManagementPage>
                 if (branch.state.isNotEmpty) branch.state,
               ].join(' • ');
 
-              return ListTile(
+              return InkWell(
+                onTap: () {
+                  Navigator.of(context).pushNamed(
+                    AppRouter.branchDetail,
+                    arguments: branch.id,
+                  );
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: ListTile(
                 tileColor: AppColors.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -180,25 +188,25 @@ class _ManagementPageState extends State<ManagementPage>
                         ),
                       ),
                     ),
-                    if (branch.isPrimary)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryLight.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: const Text(
-                          'Primary',
-                          style: TextStyle(
-                            color: AppColors.primaryContainer,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                    if (branch.isPrimary) ...[
+                      _BranchStatusChip(
+                        label: 'Primary',
+                        color: AppColors.primaryContainer,
+                        backgroundColor: AppColors.primaryLight.withOpacity(0.5),
                       ),
+                      const SizedBox(width: 6),
+                    ],
+                    _BranchStatusChip(
+                      label: branch.status.isNotEmpty ? branch.status : 'Unknown',
+                      color: branch.status.toLowerCase() == 'active'
+                          ? AppColors.success
+                          : AppColors.muted,
+                      backgroundColor:
+                          (branch.status.toLowerCase() == 'active'
+                                  ? AppColors.primary
+                                  : AppColors.muted)
+                              .withOpacity(0.1),
+                    ),
                   ],
                 ),
                 subtitle: Padding(
@@ -208,7 +216,8 @@ class _ManagementPageState extends State<ManagementPage>
                     style: const TextStyle(color: AppColors.muted),
                   ),
                 ),
-                trailing: _BranchStatusChip(status: branch.status),
+                trailing: const Icon(Icons.chevron_right, color: AppColors.muted),
+              ),
               );
             },
           );
@@ -277,7 +286,21 @@ class _ManagementPageState extends State<ManagementPage>
                   ? seller.phone
                   : seller.email;
 
-              return ListTile(
+              return InkWell(
+                onTap: () async {
+                  final updated = await Navigator.of(context).pushNamed<bool>(
+                    AppRouter.staffDetail,
+                    arguments: seller.id,
+                  );
+                  if (updated == true && mounted) {
+                    setState(() {
+                      _sellersFuture = AppServices.instance.managementRepository
+                          .fetchSellers();
+                    });
+                  }
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: ListTile(
                 tileColor: AppColors.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -287,12 +310,26 @@ class _ManagementPageState extends State<ManagementPage>
                   backgroundColor: AppColors.secondaryContainer,
                   child: Icon(Icons.person, color: AppColors.primaryContainer),
                 ),
-                title: Text(
-                  title,
-                  style: const TextStyle(
-                    color: AppColors.onBackground,
-                    fontWeight: FontWeight.w600,
-                  ),
+                title: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          color: AppColors.onBackground,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    _BranchStatusChip(
+                      label: seller.isActive ? 'Active' : 'Inactive',
+                      color: seller.isActive ? AppColors.success : AppColors.muted,
+                      backgroundColor: (seller.isActive
+                              ? AppColors.success
+                              : AppColors.muted)
+                          .withOpacity(0.12),
+                    ),
+                  ],
                 ),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,14 +346,8 @@ class _ManagementPageState extends State<ManagementPage>
                     ),
                   ],
                 ),
-                trailing: const Chip(
-                  label: Text(
-                    'Active',
-                    style: TextStyle(fontSize: 10, color: AppColors.success),
-                  ),
-                  backgroundColor: Color(0x1A5FAF7A),
-                  side: BorderSide.none,
-                ),
+                trailing: const Icon(Icons.chevron_right, color: AppColors.muted),
+              ),
               );
             },
           );
@@ -555,26 +586,32 @@ class _InviteTextField extends StatelessWidget {
 }
 
 class _BranchStatusChip extends StatelessWidget {
-  const _BranchStatusChip({required this.status});
+  const _BranchStatusChip({
+    required this.label,
+    required this.color,
+    required this.backgroundColor,
+  });
 
-  final String status;
+  final String label;
+  final Color color;
+  final Color backgroundColor;
 
   @override
   Widget build(BuildContext context) {
-    final normalizedStatus = status.toLowerCase();
-    final isActive = normalizedStatus == 'active';
-
-    return Chip(
-      label: Text(
-        normalizedStatus.isEmpty ? 'Unknown' : normalizedStatus,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
         style: TextStyle(
           fontSize: 10,
-          color: isActive ? AppColors.success : AppColors.muted,
+          color: color,
+          fontWeight: FontWeight.w600,
         ),
       ),
-      backgroundColor: (isActive ? AppColors.primary : AppColors.muted)
-          .withOpacity(0.1),
-      side: BorderSide.none,
     );
   }
 }

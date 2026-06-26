@@ -45,6 +45,7 @@ class _DashboardKpiGridState extends State<DashboardKpiGrid> {
                 meta: summary.businessName,
                 icon: Icons.receipt_long_rounded,
                 iconColor: AppColors.secondary,
+                backgroundColor: AppColors.kpiSalesBg,
               ),
               KpiCardModel(
                 title: 'Gross Amount',
@@ -52,7 +53,8 @@ class _DashboardKpiGridState extends State<DashboardKpiGrid> {
                 suffix: '',
                 meta: 'Unsettled: ${_currency(summary.today.unsettledAmount)}',
                 icon: Icons.payments_outlined,
-                iconColor: AppColors.primary,
+                iconColor: AppColors.primaryContainer,
+                backgroundColor: AppColors.kpiGrossBg,
               ),
               KpiCardModel(
                 title: 'Pending Settlements',
@@ -61,6 +63,7 @@ class _DashboardKpiGridState extends State<DashboardKpiGrid> {
                 meta: _currency(summary.pendingSettlements.totalAmount),
                 icon: Icons.account_balance_wallet_outlined,
                 iconColor: AppColors.tertiary,
+                backgroundColor: AppColors.kpiSettlementBg,
                 chip: summary.merchantId,
               ),
             ];
@@ -109,6 +112,8 @@ class _KpiCard extends StatelessWidget {
     return GlassCard(
       padding: const EdgeInsets.all(20),
       borderRadius: BorderRadius.circular(12),
+      backgroundColor: model.backgroundColor,
+      borderColor: model.iconColor.withOpacity(0.35),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -117,16 +122,30 @@ class _KpiCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   model.title.toUpperCase(),
-                  style: textTheme.labelSmall?.copyWith(letterSpacing: 1.2),
+                  style: textTheme.labelSmall?.copyWith(
+                    letterSpacing: 1.2,
+                    color: AppColors.outline,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-              Icon(model.icon, color: model.iconColor),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: model.iconColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(model.icon, color: model.iconColor, size: 20),
+              ),
             ],
           ),
           const Spacer(),
           Text(
             model.value,
-            style: textTheme.headlineLarge?.copyWith(color: AppColors.onBackground),
+            style: textTheme.headlineLarge?.copyWith(
+              color: AppColors.onBackground,
+              fontWeight: FontWeight.w800,
+            ),
           ),
           const SizedBox(height: AppSpacing.xs),
           if (model.chip != null)
@@ -134,14 +153,15 @@ class _KpiCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                color: const Color(0x333F2BB8),
-                border: Border.all(color: const Color(0x66C6C0FF)),
+                color: AppColors.primaryContainer.withOpacity(0.12),
+                border: Border.all(color: AppColors.primary.withOpacity(0.4)),
               ),
               child: Text(
                 model.chip!,
                 style: textTheme.labelSmall?.copyWith(
-                  color: AppColors.primary,
+                  color: AppColors.primaryContainer,
                   fontSize: 10,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             )
