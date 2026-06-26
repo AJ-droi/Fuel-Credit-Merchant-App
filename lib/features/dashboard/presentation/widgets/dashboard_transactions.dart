@@ -129,7 +129,7 @@ class _TransactionCard extends StatelessWidget {
               children: [
                 Text(
                   item.referenceCode,
-                  style: textTheme.bodyMedium?.copyWith(color: Colors.white),
+                  style: textTheme.bodyMedium?.copyWith(color: AppColors.onBackground),
                 ),
                 Text(
                   _timeLabel(item.createdAt),
@@ -143,7 +143,7 @@ class _TransactionCard extends StatelessWidget {
             children: [
               Text(
                 _litresLabel(item.fuelLitres),
-                style: textTheme.bodyMedium?.copyWith(color: Colors.white),
+                style: textTheme.bodyMedium?.copyWith(color: AppColors.onBackground),
               ),
               Text(
                 item.disbursementMethod.toUpperCase(),

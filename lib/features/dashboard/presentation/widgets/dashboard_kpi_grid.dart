@@ -126,7 +126,7 @@ class _KpiCard extends StatelessWidget {
           const Spacer(),
           Text(
             model.value,
-            style: textTheme.headlineLarge?.copyWith(color: Colors.white),
+            style: textTheme.headlineLarge?.copyWith(color: AppColors.onBackground),
           ),
           const SizedBox(height: AppSpacing.xs),
           if (model.chip != null)

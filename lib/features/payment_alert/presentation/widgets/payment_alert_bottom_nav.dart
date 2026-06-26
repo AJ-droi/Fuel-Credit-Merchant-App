@@ -24,7 +24,7 @@ class PaymentAlertBottomNav extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
             decoration: BoxDecoration(
-              color: active ? const Color(0x3300B954) : Colors.transparent,
+              color: active ? AppColors.primaryLight.withOpacity(0.4) : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -48,8 +48,15 @@ class PaymentAlertBottomNav extends StatelessWidget {
       height: 78,
       padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.sm, AppSpacing.sm, 10),
       decoration: const BoxDecoration(
-        color: Color(0xCC122131),
-        border: Border(top: BorderSide(color: Colors.white10)),
+        color: AppColors.navBar,
+        border: Border(top: BorderSide(color: AppColors.border)),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x0A3A3541),
+            blurRadius: 8,
+            offset: Offset(0, -2),
+          ),
+        ],
       ),
       child: Row(
         children: [

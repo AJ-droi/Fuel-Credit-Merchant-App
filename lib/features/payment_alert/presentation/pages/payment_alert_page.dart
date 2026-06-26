@@ -102,7 +102,7 @@ class PaymentAlertPage extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(height: AppSpacing.md),
-                                  const Divider(color: Colors.white10),
+                                  const Divider(color: AppColors.border),
                                   const SizedBox(height: AppSpacing.md),
                                   _ReceiptRow(
                                     leftTitle: 'Litres Dispensed',
@@ -212,7 +212,7 @@ class _TopBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       decoration: const BoxDecoration(
         color: Color(0x1A051424),
-        border: Border(bottom: BorderSide(color: Colors.white10)),
+        border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Row(
         children: [
@@ -288,7 +288,7 @@ class _ReceiptRow extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 leftValue,
-                style: textTheme.bodyMedium?.copyWith(color: Colors.white),
+                style: textTheme.bodyMedium?.copyWith(color: AppColors.onBackground),
               ),
             ],
           ),

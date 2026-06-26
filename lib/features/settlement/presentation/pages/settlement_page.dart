@@ -266,8 +266,8 @@ class _TopBar extends StatelessWidget {
       height: 80,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       decoration: const BoxDecoration(
-        color: Color(0x66122131),
-        border: Border(bottom: BorderSide(color: Colors.white10)),
+        color: AppColors.surface,
+        border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Row(
         children: [
@@ -277,7 +277,7 @@ class _TopBar extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0x338B80FF),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0x33C6C0FF)),
+              border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
             ),
             child: const Icon(Icons.person, color: AppColors.primary, size: 20),
           ),

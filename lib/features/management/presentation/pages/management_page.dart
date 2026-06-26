@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../app/router/app_router.dart';
 import '../../../../core/network/api_result.dart';
 import '../../../../core/network/app_services.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -15,57 +16,81 @@ class ManagementPage extends StatefulWidget {
   State<ManagementPage> createState() => _ManagementPageState();
 }
 
-class _ManagementPageState extends State<ManagementPage> {
+class _ManagementPageState extends State<ManagementPage>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   late Future<ApiResult<BranchesResponse>> _branchesFuture;
   late Future<ApiResult<SellersResponse>> _sellersFuture;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this)
+      ..addListener(() {
+        if (!_tabController.indexIsChanging) {
+          setState(() {});
+        }
+      });
     _branchesFuture = AppServices.instance.accountRepository.fetchBranches();
     _sellersFuture = AppServices.instance.managementRepository.fetchSellers();
   }
 
   @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _refreshBranches() {
+    setState(() {
+      _branchesFuture = AppServices.instance.accountRepository.fetchBranches();
+    });
+  }
+
+  Future<void> _openCreateBranch() async {
+    final created = await Navigator.of(context).pushNamed<bool>(
+      AppRouter.createBranch,
+    );
+    if (created == true) {
+      _refreshBranches();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: const Color(0xCC051424),
-          title: const Text(
-            'Management',
-            style: TextStyle(color: Colors.white),
-          ),
-          bottom: const TabBar(
-            indicatorColor: AppColors.primary,
-            labelColor: AppColors.primary,
-            unselectedLabelColor: AppColors.muted,
-            tabs: [
-              Tab(text: 'Branches'),
-              Tab(text: 'Attendants'),
-            ],
-          ),
-        ),
-        body: Stack(
-          children: [
-            TabBarView(children: [_buildBranchesTab(), _buildAttendantsTab()]),
-            const Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: SafeArea(top: false, child: ManagementBottomNav()),
-            ),
+    final onBranchesTab = _tabController.index == 0;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Management'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Branches'),
+            Tab(text: 'Attendants'),
           ],
         ),
-        floatingActionButton: Padding(
-          padding: const EdgeInsets.only(bottom: 80.0), // Above the bottom nav
-          child: FloatingActionButton.extended(
-            onPressed: _showInviteAttendantDialog,
-            backgroundColor: AppColors.primary,
-            icon: const Icon(Icons.person_add, color: Colors.white),
-            label: const Text('Invite', style: TextStyle(color: Colors.white)),
+      ),
+      body: Stack(
+        children: [
+          TabBarView(
+            controller: _tabController,
+            children: [_buildBranchesTab(), _buildAttendantsTab()],
           ),
+          const Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SafeArea(top: false, child: ManagementBottomNav()),
+          ),
+        ],
+      ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 80),
+        child: FloatingActionButton.extended(
+          onPressed: onBranchesTab ? _openCreateBranch : _showInviteAttendantDialog,
+          icon: Icon(onBranchesTab ? Icons.add : Icons.person_add),
+          label: Text(onBranchesTab ? 'Add Branch' : 'Invite'),
         ),
       ),
     );
@@ -83,10 +108,36 @@ class _ManagementPageState extends State<ManagementPage> {
         if (result case ApiSuccess<BranchesResponse> success) {
           final branches = success.data.data;
           if (branches.isEmpty) {
-            return const Center(
-              child: Text(
-                'No branches found',
-                style: TextStyle(color: AppColors.muted),
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.storefront_outlined,
+                      size: 48,
+                      color: AppColors.muted.withOpacity(0.6),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      'No branches yet',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Create your first branch to start assigning attendants.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    FilledButton.icon(
+                      onPressed: _openCreateBranch,
+                      icon: const Icon(Icons.add),
+                      label: const Text('Create Branch'),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -109,20 +160,24 @@ class _ManagementPageState extends State<ManagementPage> {
               ].join(' • ');
 
               return ListTile(
-                tileColor: const Color(0x33C6C0FF).withOpacity(0.05),
+                tileColor: AppColors.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: AppColors.border),
                 ),
-                leading: const CircleAvatar(
-                  backgroundColor: AppColors.primaryContainer,
-                  child: Icon(Icons.storefront, color: AppColors.primary),
+                leading: CircleAvatar(
+                  backgroundColor: AppColors.primaryLight,
+                  child: Icon(Icons.storefront, color: AppColors.primaryContainer),
                 ),
                 title: Row(
                   children: [
                     Expanded(
                       child: Text(
                         branch.name,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(
+                          color: AppColors.onBackground,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                     if (branch.isPrimary)
@@ -132,13 +187,13 @@ class _ManagementPageState extends State<ManagementPage> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.12),
+                          color: AppColors.primaryLight.withOpacity(0.5),
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: const Text(
                           'Primary',
                           style: TextStyle(
-                            color: AppColors.primary,
+                            color: AppColors.primaryContainer,
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),
@@ -166,17 +221,12 @@ class _ManagementPageState extends State<ManagementPage> {
             children: [
               Text(
                 failure.error.message,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: AppColors.onBackground),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.sm),
               TextButton(
-                onPressed: () {
-                  setState(() {
-                    _branchesFuture = AppServices.instance.accountRepository
-                        .fetchBranches();
-                  });
-                },
+                onPressed: _refreshBranches,
                 child: const Text('Retry'),
               ),
             ],
@@ -228,15 +278,22 @@ class _ManagementPageState extends State<ManagementPage> {
                   : seller.email;
 
               return ListTile(
-                tileColor: const Color(0x33C6C0FF).withOpacity(0.05),
+                tileColor: AppColors.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: AppColors.border),
                 ),
-                leading: const CircleAvatar(
+                leading: CircleAvatar(
                   backgroundColor: AppColors.secondaryContainer,
-                  child: Icon(Icons.person, color: AppColors.secondary),
+                  child: Icon(Icons.person, color: AppColors.primaryContainer),
                 ),
-                title: Text(title, style: const TextStyle(color: Colors.white)),
+                title: Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.onBackground,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -255,9 +312,9 @@ class _ManagementPageState extends State<ManagementPage> {
                 trailing: const Chip(
                   label: Text(
                     'Active',
-                    style: TextStyle(fontSize: 10, color: Colors.greenAccent),
+                    style: TextStyle(fontSize: 10, color: AppColors.success),
                   ),
-                  backgroundColor: Color(0x1A69F0AE),
+                  backgroundColor: Color(0x1A5FAF7A),
                   side: BorderSide.none,
                 ),
               );
@@ -272,7 +329,7 @@ class _ManagementPageState extends State<ManagementPage> {
             children: [
               Text(
                 failure.error.message,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: AppColors.onBackground),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -306,7 +363,9 @@ class _ManagementPageState extends State<ManagementPage> {
     final branches = (branchesResult as ApiSuccess<BranchesResponse>).data.data;
     if (branches.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No branches available for assignment')),
+        const SnackBar(
+          content: Text('Create a branch before inviting attendants'),
+        ),
       );
       return;
     }
@@ -362,11 +421,7 @@ class _ManagementPageState extends State<ManagementPage> {
             }
 
             return AlertDialog(
-              backgroundColor: const Color(0xFF010F1F),
-              title: const Text(
-                'Invite Pump Attendant',
-                style: TextStyle(color: Colors.white),
-              ),
+              title: const Text('Invite Pump Attendant'),
               content: SizedBox(
                 width: 420,
                 child: Form(
@@ -421,9 +476,7 @@ class _ManagementPageState extends State<ManagementPage> {
                         const SizedBox(height: AppSpacing.sm),
                         DropdownButtonFormField<String>(
                           value: selectedBranchId,
-                          dropdownColor: const Color(0xFF010F1F),
-                          style: const TextStyle(color: Colors.white),
-                          decoration: _inviteDecoration('Branch'),
+                          decoration: const InputDecoration(labelText: 'Branch'),
                           items: branches
                               .map(
                                 (branch) => DropdownMenuItem<String>(
@@ -456,10 +509,7 @@ class _ManagementPageState extends State<ManagementPage> {
                   onPressed: isSubmitting
                       ? null
                       : () => Navigator.of(dialogContext).pop(),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(color: AppColors.muted),
-                  ),
+                  child: const Text('Cancel'),
                 ),
                 FilledButton(
                   onPressed: isSubmitting ? null : submit,
@@ -498,30 +548,10 @@ class _InviteTextField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white),
       validator: validator,
-      decoration: _inviteDecoration(label),
+      decoration: InputDecoration(labelText: label),
     );
   }
-}
-
-InputDecoration _inviteDecoration(String label) {
-  return const InputDecoration().copyWith(
-    labelText: label,
-    labelStyle: const TextStyle(color: AppColors.muted),
-    enabledBorder: const OutlineInputBorder(
-      borderSide: BorderSide(color: Colors.white10),
-    ),
-    focusedBorder: const OutlineInputBorder(
-      borderSide: BorderSide(color: AppColors.primary),
-    ),
-    errorBorder: const OutlineInputBorder(
-      borderSide: BorderSide(color: Colors.redAccent),
-    ),
-    focusedErrorBorder: const OutlineInputBorder(
-      borderSide: BorderSide(color: Colors.redAccent),
-    ),
-  );
 }
 
 class _BranchStatusChip extends StatelessWidget {
@@ -539,10 +569,10 @@ class _BranchStatusChip extends StatelessWidget {
         normalizedStatus.isEmpty ? 'Unknown' : normalizedStatus,
         style: TextStyle(
           fontSize: 10,
-          color: isActive ? Colors.greenAccent : AppColors.muted,
+          color: isActive ? AppColors.success : AppColors.muted,
         ),
       ),
-      backgroundColor: (isActive ? Colors.greenAccent : Colors.white)
+      backgroundColor: (isActive ? AppColors.primary : AppColors.muted)
           .withOpacity(0.1),
       side: BorderSide.none,
     );

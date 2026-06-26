@@ -266,10 +266,10 @@ class _AccountPageState extends State<AccountPage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              backgroundColor: const Color(0xFF010F1F),
+              backgroundColor: AppColors.surface,
               title: const Text(
                 'Update Pump Price',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: AppColors.onBackground),
               ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -279,12 +279,12 @@ class _AccountPageState extends State<AccountPage> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: AppColors.onBackground),
                     decoration: const InputDecoration(
                       labelText: 'Price per Litre (₦)',
                       labelStyle: TextStyle(color: AppColors.muted),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white10),
+                        borderSide: BorderSide(color: AppColors.border),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: AppColors.primary),
@@ -407,10 +407,10 @@ class _AccountPageState extends State<AccountPage> {
             }
 
             return AlertDialog(
-              backgroundColor: const Color(0xFF010F1F),
+              backgroundColor: AppColors.surface,
               title: const Text(
                 'Change Password',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: AppColors.onBackground),
               ),
               content: SizedBox(
                 width: 420,
@@ -537,8 +537,8 @@ class _TopBar extends StatelessWidget {
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       decoration: const BoxDecoration(
-        color: Color(0xCC051424),
-        border: Border(bottom: BorderSide(color: Colors.white10)),
+        color: AppColors.surface,
+        border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Row(
         children: [
@@ -586,8 +586,8 @@ class _ProfileHeader extends StatelessWidget {
             gradient: const LinearGradient(
               colors: [AppColors.primary, AppColors.secondary],
             ),
-            boxShadow: const [
-              BoxShadow(color: Color(0x33C6C0FF), blurRadius: 24),
+            boxShadow: [
+              BoxShadow(color: AppColors.primaryLight.withOpacity(0.4), blurRadius: 24),
             ],
           ),
           padding: const EdgeInsets.all(2),
@@ -647,7 +647,7 @@ class _InfoTile extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           Text(
             value,
-            style: textTheme.bodyMedium?.copyWith(color: Colors.white),
+            style: textTheme.bodyMedium?.copyWith(color: AppColors.onBackground),
           ),
         ],
       ),
@@ -704,13 +704,13 @@ class _PasswordField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: AppColors.onBackground),
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: AppColors.muted),
         enabledBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.white10),
+          borderSide: BorderSide(color: AppColors.border),
         ),
         focusedBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: AppColors.primary),
@@ -772,7 +772,7 @@ class _ActionList extends StatelessWidget {
               ),
             ),
             if (i < items.length - 1)
-              const Divider(color: Colors.white10, height: 1),
+              const Divider(color: AppColors.border, height: 1),
           ],
         ],
       ),

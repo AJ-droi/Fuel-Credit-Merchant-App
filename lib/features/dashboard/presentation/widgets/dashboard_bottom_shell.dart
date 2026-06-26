@@ -24,7 +24,7 @@ class DashboardBottomShell extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
             decoration: BoxDecoration(
-              color: active ? const Color(0x3300B954) : Colors.transparent,
+              color: active ? AppColors.primaryLight.withOpacity(0.4) : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -57,8 +57,15 @@ class DashboardBottomShell extends StatelessWidget {
               height: 78,
               padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.sm, AppSpacing.sm, 10),
               decoration: const BoxDecoration(
-                color: Color(0xCC010F1F),
-                border: Border(top: BorderSide(color: Colors.white10)),
+                color: AppColors.navBar,
+                border: Border(top: BorderSide(color: AppColors.border)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x0A3A3541),
+                    blurRadius: 8,
+                    offset: Offset(0, -2),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -101,11 +108,11 @@ class DashboardBottomShell extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(40),
                   gradient: const LinearGradient(
-                    colors: [AppColors.primaryContainer, Color(0xFF5748D0)],
+                    colors: [AppColors.primary, AppColors.primaryContainer],
                   ),
                   boxShadow: const [
                     BoxShadow(
-                      color: Color(0x668B80FF),
+                      color: Color(0x335FAF7A),
                       blurRadius: 24,
                       offset: Offset(0, 8),
                     ),
@@ -118,10 +125,10 @@ class DashboardBottomShell extends StatelessWidget {
                     shadowColor: Colors.transparent,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
                   ),
-                  icon: const Icon(Icons.local_gas_station_rounded, color: Colors.white),
+                  icon: const Icon(Icons.local_gas_station_rounded, color: AppColors.onPrimary),
                   label: Text(
                     'Sell Fuel',
-                    style: textTheme.headlineSmall?.copyWith(color: Colors.white),
+                    style: textTheme.headlineSmall?.copyWith(color: AppColors.onPrimary),
                   ),
                 ),
               ),

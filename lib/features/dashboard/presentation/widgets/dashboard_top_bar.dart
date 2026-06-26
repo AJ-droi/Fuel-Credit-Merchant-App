@@ -30,8 +30,8 @@ class _DashboardTopBarState extends State<DashboardTopBar> {
       height: 80,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       decoration: const BoxDecoration(
-        color: Color(0x66122131),
-        border: Border(bottom: BorderSide(color: Colors.white10)),
+        color: AppColors.surface,
+        border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: FutureBuilder<ApiResult<DashboardSummary>>(
         future: _summaryFuture,
@@ -53,9 +53,9 @@ class _DashboardTopBarState extends State<DashboardTopBar> {
                 decoration: BoxDecoration(
                   color: AppColors.primaryContainer,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white24),
+                  border: Border.all(color: AppColors.border),
                 ),
-                child: const Icon(Icons.person, color: Colors.white, size: 20),
+                child: Icon(Icons.person, color: AppColors.primaryContainer, size: 20),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(

@@ -289,7 +289,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                                 decoration: BoxDecoration(
                                   color: AppColors.surface,
                                   borderRadius: BorderRadius.circular(24),
-                                  border: Border.all(color: Colors.white10),
+                                  border: Border.all(color: AppColors.border),
                                 ),
                                 child: Row(
                                   children: [
@@ -347,8 +347,8 @@ class _FuelSalePageState extends State<FuelSalePage> {
               Container(
                 width: 32,
                 height: 32,
-                decoration: const BoxDecoration(
-                  color: Color(0x33C6C0FF),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight.withOpacity(0.3),
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
@@ -427,12 +427,12 @@ class _FuelSalePageState extends State<FuelSalePage> {
           const SizedBox(height: AppSpacing.md),
           Row(
             children: [
-              const Expanded(child: Divider(color: Colors.white10)),
+              const Expanded(child: Divider(color: AppColors.border)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                 child: Text('OR', style: textTheme.labelSmall),
               ),
-              const Expanded(child: Divider(color: Colors.white10)),
+              const Expanded(child: Divider(color: AppColors.border)),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
@@ -448,7 +448,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: const Color(0x1A0D1C2D),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -480,9 +480,9 @@ class _FuelSalePageState extends State<FuelSalePage> {
               padding: const EdgeInsets.all(AppSpacing.md),
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.white10,
+                color: AppColors.border,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.white24),
+                border: Border.all(color: AppColors.borderStrong),
               ),
               child: Column(
                 children: [
@@ -490,7 +490,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                     width: 220,
                     height: 220,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.surface,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     alignment: Alignment.center,
@@ -498,7 +498,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                       padding: const EdgeInsets.all(AppSpacing.sm),
                       child: QrImageView(
                         data: _qrPaymentData?.qrPayload ?? '',
-                        backgroundColor: Colors.white,
+                        backgroundColor: AppColors.surface,
                         eyeStyle: const QrEyeStyle(
                           color: Colors.black,
                           eyeShape: QrEyeShape.square,
@@ -555,7 +555,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                       decoration: BoxDecoration(
                         color: const Color(0x22051A24),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white10),
+                        border: Border.all(color: AppColors.border),
                       ),
                       child: LayoutBuilder(
                         builder: (context, constraints) {
@@ -756,7 +756,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: const Color(0x1A0D1C2D),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -788,12 +788,12 @@ class _FuelSalePageState extends State<FuelSalePage> {
             style: textTheme.bodyMedium?.copyWith(color: AppColors.primary),
             decoration: InputDecoration(
               hintText: 'Enter Customer ID (e.g. FF-9821)',
-              hintStyle: textTheme.bodyMedium?.copyWith(color: Colors.white38),
+              hintStyle: textTheme.bodyMedium?.copyWith(color: AppColors.muted),
               filled: true,
               fillColor: AppColors.surface,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Colors.white10),
+                borderSide: const BorderSide(color: AppColors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -848,7 +848,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
           decoration: BoxDecoration(
             color: const Color(0x260D1C2D),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.white24),
+            border: Border.all(color: AppColors.borderStrong),
           ),
           child: Row(
             children: [
@@ -896,7 +896,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
           decoration: BoxDecoration(
             color: const Color(0x260D1C2D),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.white24),
+            border: Border.all(color: AppColors.borderStrong),
           ),
           child: Row(
             children: [
@@ -940,9 +940,9 @@ class _FuelSalePageState extends State<FuelSalePage> {
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.04)),
+        border: Border.all(color: AppColors.surface),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -955,7 +955,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
           const SizedBox(height: AppSpacing.xs),
           Text(
             value,
-            style: textTheme.bodyMedium?.copyWith(color: Colors.white),
+            style: textTheme.bodyMedium?.copyWith(color: AppColors.onBackground),
           ),
         ],
       ),
@@ -975,7 +975,7 @@ class _TopBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       decoration: const BoxDecoration(
         color: Color(0x1A051424),
-        border: Border(bottom: BorderSide(color: Colors.white10)),
+        border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Row(
         children: [

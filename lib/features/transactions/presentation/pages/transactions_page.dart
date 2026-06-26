@@ -121,7 +121,7 @@ class _TransactionListTile extends StatelessWidget {
                 child: Text(
                   item.businessName.isEmpty ? item.referenceCode : item.businessName,
                   style: textTheme.bodyLarge?.copyWith(
-                    color: Colors.white,
+                    color: AppColors.onBackground,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -184,7 +184,7 @@ class _MetaBlock extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           Text(
             value,
-            style: textTheme.bodyMedium?.copyWith(color: Colors.white),
+            style: textTheme.bodyMedium?.copyWith(color: AppColors.onBackground),
           ),
         ],
       ),

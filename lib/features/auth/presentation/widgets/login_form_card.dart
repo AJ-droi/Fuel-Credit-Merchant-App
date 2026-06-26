@@ -172,7 +172,7 @@ class _LoginFormCardState extends State<LoginFormCard> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     gradient: const LinearGradient(
-                      colors: [AppColors.primaryContainer, AppColors.secondary],
+                      colors: [AppColors.primary, AppColors.primaryContainer],
                     ),
                   ),
                   child: FilledButton(
@@ -196,7 +196,7 @@ class _LoginFormCardState extends State<LoginFormCard> {
                             'Login',
                             style: textTheme.headlineSmall?.copyWith(
                               fontSize: 22,
-                              color: AppColors.onPrimaryContainer,
+                              color: AppColors.onPrimary,
                             ),
                           ),
                   ),
@@ -214,7 +214,7 @@ class _LoginFormCardState extends State<LoginFormCard> {
         OutlinedButton(
           onPressed: () {},
           style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: Colors.white10),
+            side: const BorderSide(color: AppColors.borderStrong),
             minimumSize: const Size(double.infinity, 50),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
@@ -268,14 +268,14 @@ class _AuthField extends StatelessWidget {
       cursorColor: AppColors.primary,
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: textTheme.bodyMedium?.copyWith(color: Colors.white24),
+        hintStyle: textTheme.bodyMedium?.copyWith(color: AppColors.muted),
         prefixIcon: Icon(icon, color: AppColors.muted),
         suffixIcon: suffix,
         enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white12),
+          borderSide: BorderSide(color: AppColors.border),
         ),
         focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.primaryContainer),
+          borderSide: BorderSide(color: AppColors.primary),
         ),
       ),
     );

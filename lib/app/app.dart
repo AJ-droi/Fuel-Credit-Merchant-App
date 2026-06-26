@@ -11,7 +11,7 @@ class FuelCreditMerchantApp extends StatelessWidget {
     return MaterialApp(
       title: 'Fuel Credit Merchant',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
+      theme: AppTheme.light,
       onGenerateRoute: AppRouter.onGenerateRoute,
       initialRoute: AppRouter.login,
     );

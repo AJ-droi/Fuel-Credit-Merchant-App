@@ -15,7 +15,7 @@ class DashboardThroughput extends StatelessWidget {
         {bool leftBorder = false}) {
       return Container(
         decoration: BoxDecoration(
-          border: leftBorder ? const Border(left: BorderSide(color: Colors.white10)) : null,
+          border: leftBorder ? const Border(left: BorderSide(color: AppColors.border)) : null,
         ),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         child: Column(

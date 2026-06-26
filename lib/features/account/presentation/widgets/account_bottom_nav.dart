@@ -30,7 +30,7 @@ class AccountBottomNav extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 6),
             decoration: BoxDecoration(
-              color: active ? const Color(0x33C6C0FF) : Colors.transparent,
+              color: active ? AppColors.primaryLight.withOpacity(0.4) : Colors.transparent,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Column(
@@ -65,8 +65,15 @@ class AccountBottomNav extends StatelessWidget {
         10,
       ),
       decoration: const BoxDecoration(
-        color: Color(0xCC010F1F),
-        border: Border(top: BorderSide(color: Colors.white10)),
+        color: AppColors.navBar,
+        border: Border(top: BorderSide(color: AppColors.border)),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x0A3A3541),
+            blurRadius: 8,
+            offset: Offset(0, -2),
+          ),
+        ],
       ),
       child: Row(
         children: [

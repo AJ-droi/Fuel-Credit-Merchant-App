@@ -52,7 +52,7 @@ class _MeshBackground extends StatelessWidget {
         gradient: RadialGradient(
           center: Alignment(-0.7, -0.5),
           radius: 1.2,
-          colors: [Color(0x238B80FF), Colors.transparent],
+          colors: [Color(0x235FAF7A), Colors.transparent],
           stops: [0, 0.7],
         ),
       ),
@@ -61,7 +61,7 @@ class _MeshBackground extends StatelessWidget {
           gradient: RadialGradient(
             center: Alignment(0.75, 0.7),
             radius: 1,
-            colors: [Color(0x204AE176), Colors.transparent],
+            colors: [Color(0x205FAF7A), Colors.transparent],
             stops: [0, 0.7],
           ),
         ),

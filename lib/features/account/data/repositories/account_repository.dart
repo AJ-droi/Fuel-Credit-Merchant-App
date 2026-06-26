@@ -23,6 +23,37 @@ class AccountRepository {
     );
   }
 
+  Future<ApiResult<BranchModel>> createBranch({
+    required String name,
+    required String address,
+    required String city,
+    required String lga,
+    required String state,
+    required String landmark,
+    bool isPrimary = false,
+  }) async {
+    return _apiClient.post<BranchModel>(
+      ApiEndpoints.merchantBranches,
+      data: {
+        'name': name,
+        'address': address,
+        'city': city,
+        'lga': lga,
+        'state': state,
+        'landmark': landmark,
+        'isPrimary': isPrimary,
+      },
+      parser: (json) {
+        final map = json as Map<String, dynamic>;
+        final data = map['data'];
+        if (data is Map<String, dynamic>) {
+          return BranchModel.fromJson(data);
+        }
+        return BranchModel.fromJson(map);
+      },
+    );
+  }
+
   Future<ApiResult<bool>> updateFuelPrice(double fuelPricePerLitre) async {
     return _apiClient.put<bool>(
       ApiEndpoints.merchantFuelPrice,
