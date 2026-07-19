@@ -16,6 +16,7 @@ class PaymentAlertArgs {
     required this.fuelType,
     required this.customerId,
     required this.transactionId,
+    this.message,
   });
 
   final PaymentAlertStatus status;
@@ -24,6 +25,7 @@ class PaymentAlertArgs {
   final String fuelType;
   final String customerId;
   final String transactionId;
+  final String? message;
 }
 
 class PaymentAlertPage extends StatelessWidget {
@@ -36,7 +38,7 @@ class PaymentAlertPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final accent = _isSuccess ? AppColors.secondary : const Color(0xFFFFB4AB);
+    final accent = _isSuccess ? AppColors.primary : AppColors.danger;
     final icon = _isSuccess ? Icons.check_circle : Icons.cancel;
     final title = _isSuccess ? 'Payment Successful' : 'Payment Failed';
     final subtitle = _isSuccess
@@ -84,6 +86,17 @@ class PaymentAlertPage extends StatelessWidget {
                                 color: AppColors.muted,
                               ),
                             ),
+                            if (args.message != null &&
+                                args.message!.trim().isNotEmpty) ...[
+                              const SizedBox(height: AppSpacing.sm),
+                              Text(
+                                args.message!,
+                                textAlign: TextAlign.center,
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: accent,
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: AppSpacing.lg),
                             GlassCard(
                               borderRadius: BorderRadius.circular(12),
@@ -125,13 +138,7 @@ class PaymentAlertPage extends StatelessWidget {
                                     width: double.infinity,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(8),
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          AppColors.primaryContainer
-                                              .withOpacity(0.5),
-                                          accent.withOpacity(0.5),
-                                        ],
-                                      ),
+                                      color: accent,
                                     ),
                                   ),
                                 ],
@@ -140,44 +147,33 @@ class PaymentAlertPage extends StatelessWidget {
                             const SizedBox(height: AppSpacing.lg),
                             SizedBox(
                               width: double.infinity,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(36),
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      AppColors.primaryContainer,
-                                      _isSuccess
-                                          ? AppColors.secondary
-                                          : const Color(0xFFFF6B6B),
-                                    ],
-                                  ),
-                                ),
-                                child: FilledButton.icon(
+                              child: FilledButton.icon(
                                   onPressed: () => Navigator.of(context)
                                       .pushNamedAndRemoveUntil(
                                         AppRouter.dashboard,
                                         (route) => false,
                                       ),
                                   style: FilledButton.styleFrom(
-                                    backgroundColor: Colors.transparent,
-                                    shadowColor: Colors.transparent,
+                                    backgroundColor: _isSuccess
+                                        ? AppColors.primary
+                                        : AppColors.danger,
+                                    foregroundColor: AppColors.onPrimary,
                                     padding: const EdgeInsets.symmetric(
                                       vertical: AppSpacing.md,
                                     ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(36),
+                                    ),
                                   ),
-                                  icon: const Icon(
-                                    Icons.arrow_forward,
-                                    color: AppColors.background,
-                                  ),
+                                  icon: const Icon(Icons.arrow_forward),
                                   label: Text(
                                     'Back to Dashboard',
                                     style: textTheme.bodyLarge?.copyWith(
-                                      color: AppColors.background,
+                                      color: AppColors.onPrimary,
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
-                              ),
                             ),
                           ],
                         ),

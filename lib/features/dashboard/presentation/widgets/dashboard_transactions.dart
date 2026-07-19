@@ -237,12 +237,12 @@ class _TransactionsErrorState extends StatelessWidget {
 
 Color _statusColor(MerchantTransaction item) {
   if (item.isSuccessful) {
-    return AppColors.secondary;
+    return AppColors.primary;
   }
   if (item.isPending) {
-    return AppColors.tertiary;
+    return AppColors.secondary;
   }
-  return const Color(0xFFFFB4AB);
+  return AppColors.danger;
 }
 
 String _statusLabel(String status) {

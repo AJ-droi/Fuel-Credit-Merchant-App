@@ -43,26 +43,6 @@ class _MeshBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: RadialGradient(
-          center: Alignment(-0.7, -0.5),
-          radius: 1.2,
-          colors: [Color(0x550FA958), Colors.transparent],
-          stops: [0, 0.7],
-        ),
-      ),
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment(0.75, 0.7),
-            radius: 1,
-            colors: [Color(0x45FF3D7A), Colors.transparent],
-            stops: [0, 0.7],
-          ),
-        ),
-        child: const ColoredBox(color: AppColors.background),
-      ),
-    );
+    return const ColoredBox(color: AppColors.background);
   }
 }

@@ -226,18 +226,18 @@ class _AccountPageState extends State<AccountPage> {
                 context,
               ).pushNamedAndRemoveUntil(AppRouter.login, (route) => false),
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0x66FFB4AB)),
-                backgroundColor: const Color(0x14690005),
+                side: const BorderSide(color: AppColors.danger),
+                backgroundColor: AppColors.danger.withOpacity(0.08),
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              icon: const Icon(Icons.logout, color: Color(0xFFFFB4AB)),
+              icon: const Icon(Icons.logout, color: AppColors.danger),
               label: Text(
                 'Logout Session',
                 style: textTheme.bodyLarge?.copyWith(
-                  color: const Color(0xFFFFB4AB),
+                  color: AppColors.danger,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -583,12 +583,8 @@ class _ProfileHeader extends StatelessWidget {
           height: 96,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              colors: [AppColors.primary, AppColors.secondary],
-            ),
-            boxShadow: [
-              BoxShadow(color: AppColors.primaryLight.withOpacity(0.4), blurRadius: 24),
-            ],
+            color: AppColors.primary,
+            border: Border.all(color: AppColors.secondary, width: 3),
           ),
           padding: const EdgeInsets.all(2),
           child: Container(

@@ -1,6 +1,7 @@
 class AppConfig {
   AppConfig._();
 
+  /// Override with: `--dart-define=API_BASE_URL=https://...`
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: 'https://fuel-lending-app.onrender.com/api/v1',

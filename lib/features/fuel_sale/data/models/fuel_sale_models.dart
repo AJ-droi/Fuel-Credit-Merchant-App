@@ -1,21 +1,15 @@
 class CreateFuelSaleRequest {
   const CreateFuelSaleRequest({
+    required this.purchaseId,
     required this.amount,
-    required this.litres,
-    required this.customerId,
-    required this.fuelType,
   });
 
+  final String purchaseId;
   final double amount;
-  final double litres;
-  final String customerId;
-  final String fuelType;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
+        'purchaseId': purchaseId,
         'amount': amount,
-        'litres': litres,
-        'customerId': customerId,
-        'fuelType': fuelType,
       };
 }
 
@@ -35,16 +29,27 @@ class FuelSaleResponse {
   const FuelSaleResponse({
     required this.transactionId,
     required this.status,
+    this.amount = 0,
+    this.fuelLitres = 0,
+    this.pricePerLitre = 0,
   });
 
   final String transactionId;
   final String status;
+  final double amount;
+  final double fuelLitres;
+  final double pricePerLitre;
 
   factory FuelSaleResponse.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    final data = json['data'] is Map<String, dynamic>
+        ? json['data'] as Map<String, dynamic>
+        : json;
     return FuelSaleResponse(
-      transactionId: (data['transactionId'] ?? json['transactionId'] ?? '').toString(),
-      status: (data['status'] ?? json['status'] ?? '').toString(),
+      transactionId: (data['transactionId'] ?? '').toString(),
+      status: (data['status'] ?? '').toString(),
+      amount: _toDouble(data['amount']),
+      fuelLitres: _toDouble(data['fuelLitres']),
+      pricePerLitre: _toDouble(data['pricePerLitre']),
     );
   }
 }

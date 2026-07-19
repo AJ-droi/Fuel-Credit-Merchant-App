@@ -168,36 +168,33 @@ class _LoginFormCardState extends State<LoginFormCard> {
               const SizedBox(height: AppSpacing.sm),
               SizedBox(
                 width: double.infinity,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    gradient: AppColors.primaryGradient,
-                  ),
-                  child: FilledButton(
-                    onPressed: _isSubmitting ? null : _submit,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      disabledBackgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                child: FilledButton(
+                  onPressed: _isSubmitting ? null : _submit,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.onPrimary,
+                    disabledBackgroundColor: AppColors.primaryContainer,
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: _isSubmitting
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(
-                            'Login',
-                            style: textTheme.headlineSmall?.copyWith(
-                              fontSize: 22,
-                              color: AppColors.onPrimary,
-                            ),
-                          ),
                   ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.onPrimary,
+                          ),
+                        )
+                      : Text(
+                          'Login',
+                          style: textTheme.headlineSmall?.copyWith(
+                            fontSize: 22,
+                            color: AppColors.onPrimary,
+                          ),
+                        ),
                 ),
               ),
             ],

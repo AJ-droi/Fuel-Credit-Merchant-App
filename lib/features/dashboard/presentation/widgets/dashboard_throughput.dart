@@ -61,7 +61,7 @@ class DashboardThroughput extends StatelessWidget {
               stat('94', '%', 'Uptime', AppColors.primary),
               stat('4.2', 'm', 'Avg Fill Time', AppColors.secondary, leftBorder: true),
               stat('12', 'k', 'Ltrs/Month', AppColors.tertiary, leftBorder: true),
-              stat('0', '%', 'Discrepancy', const Color(0xFFFFB4AB), leftBorder: true),
+              stat('0', '%', 'Discrepancy', AppColors.danger, leftBorder: true),
             ],
           ),
         ],

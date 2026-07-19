@@ -31,6 +31,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
   bool _updatingFromLitres = false;
   bool _isLoadingFuelPrice = true;
   bool _isGeneratingQr = false;
+  bool _isProcessingIdPayment = false;
   bool _qrReady = false;
   QrPaymentData? _qrPaymentData;
   Timer? _qrExpiryTimer;
@@ -189,7 +190,11 @@ class _FuelSalePageState extends State<FuelSalePage> {
     );
   }
 
-  void _openPaymentAlert(PaymentAlertStatus status) {
+  void _openPaymentAlert(
+    PaymentAlertStatus status, {
+    String? transactionId,
+    String? message,
+  }) {
     Navigator.of(context).pushNamed(
       AppRouter.paymentAlert,
       arguments: PaymentAlertArgs(
@@ -198,42 +203,64 @@ class _FuelSalePageState extends State<FuelSalePage> {
         litres: _formattedLitres(),
         fuelType: 'PMS 95',
         customerId: _customerIdController.text.trim().isEmpty
-            ? 'KNTC-8821'
+            ? '—'
             : _customerIdController.text.trim(),
-        transactionId: _qrPaymentData?.transactionId ?? 'TXN-PENDING',
+        transactionId: transactionId ??
+            _qrPaymentData?.transactionId ??
+            '—',
+        message: message,
       ),
     );
   }
 
-  void _processIdPayment() {
-    final customer = _customerIdController.text.trim();
-    if (customer.isEmpty || !customer.contains('-')) {
-      _openPaymentAlert(PaymentAlertStatus.failure);
+  Future<void> _processIdPayment() async {
+    if (_isProcessingIdPayment) {
       return;
     }
-    _submitCreditPayment(customer);
-  }
 
-  Future<void> _submitCreditPayment(String customerId) async {
-    final request = CreateFuelSaleRequest(
-      amount: double.tryParse(_nairaController.text) ?? 0,
-      litres: double.tryParse(_litresController.text) ?? 0,
-      customerId: customerId,
-      fuelType: 'PMS 95',
-    );
+    final purchaseId = _customerIdController.text.trim().replaceAll(RegExp(r'\D'), '');
+    final amount = double.tryParse(_nairaController.text.trim()) ?? 0;
+
+    if (purchaseId.length != 9) {
+      _openPaymentAlert(
+        PaymentAlertStatus.failure,
+        message: 'Enter a valid 9-digit customer purchase ID',
+      );
+      return;
+    }
+
+    if (amount <= 0) {
+      _openPaymentAlert(
+        PaymentAlertStatus.failure,
+        message: 'Enter a valid purchase amount',
+      );
+      return;
+    }
+
+    setState(() => _isProcessingIdPayment = true);
 
     final result = await AppServices.instance.fuelSaleRepository.createSale(
-      request,
+      CreateFuelSaleRequest(purchaseId: purchaseId, amount: amount),
     );
+
     if (!mounted) {
       return;
     }
 
+    setState(() => _isProcessingIdPayment = false);
+
     switch (result) {
-      case ApiSuccess<FuelSaleResponse> _:
-        _openPaymentAlert(PaymentAlertStatus.success);
-      case ApiFailure<FuelSaleResponse> _:
-        _openPaymentAlert(PaymentAlertStatus.failure);
+      case ApiSuccess<FuelSaleResponse> success:
+        _openPaymentAlert(
+          PaymentAlertStatus.success,
+          transactionId: success.data.transactionId,
+          message: 'Fuel credit disbursed successfully',
+        );
+      case ApiFailure<FuelSaleResponse> failure:
+        _openPaymentAlert(
+          PaymentAlertStatus.failure,
+          message: failure.error.message,
+        );
     }
   }
 
@@ -486,7 +513,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                         height: 8,
                         decoration: BoxDecoration(
                           color: _isQrExpired
-                              ? const Color(0xFFFFB4AB)
+                              ? AppColors.danger
                               : Colors.white,
                           shape: BoxShape.circle,
                         ),
@@ -498,7 +525,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                             : 'QR active • expires in ${_formatDuration(_qrRemaining)}',
                         style: textTheme.labelSmall?.copyWith(
                           color: _isQrExpired
-                              ? const Color(0xFFFFB4AB)
+                              ? AppColors.danger
                               : Colors.white,
                           fontWeight: FontWeight.w600,
                         ),
@@ -584,13 +611,13 @@ class _FuelSalePageState extends State<FuelSalePage> {
                       ),
                       decoration: BoxDecoration(
                         color: _isQrExpired
-                            ? const Color(0x1AFFB4AB)
-                            : const Color(0x1A4AE176),
+                            ? AppColors.danger.withOpacity(0.12)
+                            : AppColors.primary.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: _isQrExpired
-                              ? const Color(0x44FFB4AB)
-                              : const Color(0x444AE176),
+                              ? AppColors.danger
+                              : AppColors.primary,
                         ),
                       ),
                       child: Row(
@@ -601,7 +628,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                                 : Icons.verified_user_outlined,
                             size: 18,
                             color: _isQrExpired
-                                ? const Color(0xFFFFB4AB)
+                                ? AppColors.danger
                                 : AppColors.secondary,
                           ),
                           const SizedBox(width: AppSpacing.sm),
@@ -612,7 +639,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                                   : 'The payment window remains open until the timer runs out.',
                               style: textTheme.labelSmall?.copyWith(
                                 color: _isQrExpired
-                                    ? const Color(0xFFFFB4AB)
+                                    ? AppColors.danger
                                     : AppColors.secondary,
                               ),
                             ),
@@ -674,11 +701,11 @@ class _FuelSalePageState extends State<FuelSalePage> {
                             onPressed: () =>
                                 _openPaymentAlert(PaymentAlertStatus.failure),
                             style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Color(0x66FFB4AB)),
+                              side: const BorderSide(color: AppColors.danger),
                               padding: const EdgeInsets.symmetric(
                                 vertical: AppSpacing.md,
                               ),
-                              foregroundColor: const Color(0xFFFFB4AB),
+                              foregroundColor: AppColors.danger,
                             ),
                             icon: const Icon(Icons.error_outline_rounded),
                             label: const Text('Decline Payment'),
@@ -754,7 +781,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                       style: textTheme.headlineSmall?.copyWith(fontSize: 18),
                     ),
                     Text(
-                      'Corporate or Fleet Customer ID',
+                      '9-digit customer purchase ID',
                       style: textTheme.labelSmall,
                     ),
                   ],
@@ -765,9 +792,10 @@ class _FuelSalePageState extends State<FuelSalePage> {
           const SizedBox(height: AppSpacing.md),
           TextField(
             controller: _customerIdController,
+            keyboardType: TextInputType.number,
             style: textTheme.bodyMedium?.copyWith(color: AppColors.primary),
             decoration: InputDecoration(
-              hintText: 'Enter Customer ID (e.g. FF-9821)',
+              hintText: 'Enter purchase ID (e.g. 700237721)',
               hintStyle: textTheme.bodyMedium?.copyWith(color: AppColors.muted),
               filled: true,
               fillColor: AppColors.surface,
@@ -785,7 +813,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: _processIdPayment,
+              onPressed: _isProcessingIdPayment ? null : _processIdPayment,
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: AppColors.primary),
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
@@ -793,12 +821,18 @@ class _FuelSalePageState extends State<FuelSalePage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              icon: const Icon(
-                Icons.verified_user_rounded,
-                color: AppColors.primary,
-              ),
+              icon: _isProcessingIdPayment
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(
+                      Icons.verified_user_rounded,
+                      color: AppColors.primary,
+                    ),
               label: Text(
-                'Process ID Payment',
+                _isProcessingIdPayment ? 'Processing...' : 'Process ID Payment',
                 style: textTheme.bodyLarge?.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w700,

@@ -71,15 +71,20 @@ class _DashboardKpiGridState extends State<DashboardKpiGrid> {
             return LayoutBuilder(
               builder: (context, constraints) {
                 final isDesktop = constraints.maxWidth > 860;
+                final isWide = constraints.maxWidth > 520;
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: cards.length,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: isDesktop ? 3 : 1,
-                    mainAxisSpacing: AppSpacing.md,
-                    crossAxisSpacing: AppSpacing.md,
-                    childAspectRatio: isDesktop ? 1.5 : 2.7,
+                    crossAxisCount: isDesktop || isWide ? 3 : 1,
+                    mainAxisSpacing: AppSpacing.sm,
+                    crossAxisSpacing: AppSpacing.sm,
+                    childAspectRatio: isDesktop
+                        ? 2.35
+                        : isWide
+                            ? 1.55
+                            : 3.1,
                   ),
                   itemBuilder: (_, index) => _KpiCard(model: cards[index]),
                 );
@@ -110,8 +115,8 @@ class _KpiCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return GlassCard(
-      padding: const EdgeInsets.all(20),
-      borderRadius: BorderRadius.circular(12),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      borderRadius: BorderRadius.circular(10),
       backgroundColor: model.backgroundColor,
       borderColor: model.iconColor.withOpacity(0.35),
       child: Column(
@@ -122,45 +127,54 @@ class _KpiCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   model.title.toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: textTheme.labelSmall?.copyWith(
-                    letterSpacing: 1.2,
+                    letterSpacing: 0.8,
                     color: AppColors.outline,
                     fontWeight: FontWeight.w700,
+                    fontSize: 10,
                   ),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   color: model.iconColor.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(model.icon, color: model.iconColor, size: 20),
+                child: Icon(model.icon, color: model.iconColor, size: 16),
               ),
             ],
           ),
           const Spacer(),
           Text(
             model.value,
-            style: textTheme.headlineLarge?.copyWith(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.titleLarge?.copyWith(
               color: AppColors.onBackground,
               fontWeight: FontWeight.w800,
+              fontSize: 22,
+              height: 1.1,
             ),
           ),
-          const SizedBox(height: AppSpacing.xs),
+          const SizedBox(height: 4),
           if (model.chip != null)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(6),
                 color: AppColors.primaryContainer.withOpacity(0.12),
                 border: Border.all(color: AppColors.primary.withOpacity(0.4)),
               ),
               child: Text(
                 model.chip!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: textTheme.labelSmall?.copyWith(
                   color: AppColors.primaryContainer,
-                  fontSize: 10,
+                  fontSize: 9,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -168,7 +182,12 @@ class _KpiCard extends StatelessWidget {
           else
             Text(
               model.meta,
-              style: textTheme.labelSmall?.copyWith(color: AppColors.muted),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: textTheme.labelSmall?.copyWith(
+                color: AppColors.muted,
+                fontSize: 10,
+              ),
             ),
         ],
       ),

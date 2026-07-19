@@ -106,30 +106,17 @@ class DashboardBottomShell extends StatelessWidget {
             bottom: 72,
             child: SizedBox(
               height: 64,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(40),
-                  gradient: AppColors.primaryGradient,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withOpacity(0.45),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+              child: FilledButton.icon(
+                onPressed: () => Navigator.of(context).pushNamed(AppRouter.fuelSale),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.onPrimary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
                 ),
-                child: FilledButton.icon(
-                  onPressed: () => Navigator.of(context).pushNamed(AppRouter.fuelSale),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-                  ),
-                  icon: const Icon(Icons.local_gas_station_rounded, color: AppColors.onPrimary),
-                  label: Text(
-                    'Sell Fuel',
-                    style: textTheme.headlineSmall?.copyWith(color: AppColors.onPrimary),
-                  ),
+                icon: const Icon(Icons.local_gas_station_rounded),
+                label: Text(
+                  'Sell Fuel',
+                  style: textTheme.headlineSmall?.copyWith(color: AppColors.onPrimary),
                 ),
               ),
             ),

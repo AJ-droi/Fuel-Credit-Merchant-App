@@ -14,7 +14,7 @@ final class AppTheme {
       primaryContainer: AppColors.primaryContainer,
       onPrimaryContainer: AppColors.onPrimaryContainer,
       secondary: AppColors.secondary,
-      onSecondary: AppColors.onPrimary,
+      onSecondary: AppColors.onSecondary,
       secondaryContainer: AppColors.secondaryContainer,
       tertiary: AppColors.tertiary,
       surface: AppColors.surface,
