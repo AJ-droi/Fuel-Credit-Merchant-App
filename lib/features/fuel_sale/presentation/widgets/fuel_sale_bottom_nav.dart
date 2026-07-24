@@ -2,15 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_spacing.dart';
 
 class FuelSaleBottomNav extends StatelessWidget {
   const FuelSaleBottomNav({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     Widget navItem({
       required IconData icon,
       required String label,
@@ -21,22 +18,25 @@ class FuelSaleBottomNav extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: active ? AppColors.primaryContainer.withOpacity(0.12) : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-              border: active ? Border.all(color: AppColors.primary.withOpacity(0.35)) : null,
-            ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: active ? AppColors.primaryContainer : AppColors.muted),
+                Icon(
+                  icon,
+                  size: 22,
+                  color: active ? AppColors.primary : AppColors.slate400,
+                ),
+                const SizedBox(height: 4),
                 Text(
                   label,
-                  style: textTheme.labelSmall?.copyWith(
-                    color: active ? AppColors.primaryContainer : AppColors.muted,
-                    fontWeight: active ? FontWeight.w700 : FontWeight.w600,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                    color: active ? AppColors.primary : AppColors.slate400,
                   ),
                 ),
               ],
@@ -47,30 +47,30 @@ class FuelSaleBottomNav extends StatelessWidget {
     }
 
     return Container(
-      height: 78,
-      padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.sm, AppSpacing.sm, 10),
-      decoration: const BoxDecoration(
+      height: 72,
+      padding: const EdgeInsets.fromLTRB(4, 6, 4, 8),
+      decoration: BoxDecoration(
         color: AppColors.navBar,
-        border: Border(top: BorderSide(color: AppColors.border)),
+        border: const Border(top: BorderSide(color: AppColors.slate200)),
         boxShadow: [
           BoxShadow(
-            color: Color(0x0A3A3541),
-            blurRadius: 8,
-            offset: Offset(0, -2),
+            color: AppColors.slate900.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
       child: Row(
         children: [
           navItem(
-            icon: Icons.dashboard_rounded,
-            label: 'Dashboard',
+            icon: Icons.home_rounded,
+            label: 'Home',
             active: false,
             onTap: () => Navigator.of(context).pushReplacementNamed(AppRouter.dashboard),
           ),
           navItem(
-            icon: Icons.ev_station_rounded,
-            label: 'Fuel Sale',
+            icon: Icons.bolt_rounded,
+            label: 'Sell',
             active: true,
             onTap: () {},
           ),
@@ -81,8 +81,8 @@ class FuelSaleBottomNav extends StatelessWidget {
             onTap: () => Navigator.of(context).pushNamed(AppRouter.management),
           ),
           navItem(
-            icon: Icons.account_balance_wallet_outlined,
-            label: 'Settlement',
+            icon: Icons.payments_outlined,
+            label: 'Settle',
             active: false,
             onTap: () => Navigator.of(context).pushNamed(AppRouter.settlement),
           ),

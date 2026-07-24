@@ -241,7 +241,7 @@ Color _statusColor(MerchantTransaction item) {
     return AppColors.primary;
   }
   if (item.isPending) {
-    return AppColors.secondary;
+    return const Color(0xFFA16207);
   }
   return AppColors.danger;
 }

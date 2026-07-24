@@ -44,7 +44,7 @@ class _DashboardKpiGridState extends State<DashboardKpiGrid> {
                 suffix: '',
                 meta: summary.businessName,
                 icon: Icons.receipt_long_rounded,
-                iconColor: AppColors.secondary,
+                iconColor: AppColors.primary,
                 backgroundColor: AppColors.kpiSalesBg,
               ),
               KpiCardModel(
@@ -53,7 +53,7 @@ class _DashboardKpiGridState extends State<DashboardKpiGrid> {
                 suffix: '',
                 meta: 'Unsettled: ${_currency(summary.today.unsettledAmount)}',
                 icon: Icons.payments_outlined,
-                iconColor: AppColors.primaryContainer,
+                iconColor: const Color(0xFFA16207),
                 backgroundColor: AppColors.kpiGrossBg,
               ),
               KpiCardModel(
@@ -62,7 +62,7 @@ class _DashboardKpiGridState extends State<DashboardKpiGrid> {
                 suffix: '',
                 meta: _currency(summary.pendingSettlements.totalAmount),
                 icon: Icons.account_balance_wallet_outlined,
-                iconColor: AppColors.tertiary,
+                iconColor: AppColors.slate700,
                 backgroundColor: AppColors.kpiSettlementBg,
                 chip: summary.merchantId,
               ),
@@ -116,9 +116,9 @@ class _KpiCard extends StatelessWidget {
 
     return GlassCard(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(16),
       backgroundColor: model.backgroundColor,
-      borderColor: model.iconColor.withOpacity(0.35),
+      borderColor: AppColors.border,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -131,7 +131,7 @@ class _KpiCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: textTheme.labelSmall?.copyWith(
                     letterSpacing: 0.8,
-                    color: AppColors.outline,
+                    color: AppColors.slate500,
                     fontWeight: FontWeight.w700,
                     fontSize: 10,
                   ),
@@ -140,7 +140,7 @@ class _KpiCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: model.iconColor.withOpacity(0.15),
+                  color: model.iconColor.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(model.icon, color: model.iconColor, size: 16),
@@ -153,10 +153,11 @@ class _KpiCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: textTheme.titleLarge?.copyWith(
-              color: AppColors.onBackground,
+              color: AppColors.slate900,
               fontWeight: FontWeight.w800,
               fontSize: 22,
               height: 1.1,
+              fontFamily: 'monospace',
             ),
           ),
           const SizedBox(height: 4),
@@ -165,15 +166,15 @@ class _KpiCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(6),
-                color: AppColors.primaryContainer.withOpacity(0.12),
-                border: Border.all(color: AppColors.primary.withOpacity(0.4)),
+                color: AppColors.primary.withOpacity(0.1),
+                border: Border.all(color: AppColors.primary.withOpacity(0.25)),
               ),
               child: Text(
                 model.chip!,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: textTheme.labelSmall?.copyWith(
-                  color: AppColors.primaryContainer,
+                  color: AppColors.primary,
                   fontSize: 9,
                   fontWeight: FontWeight.w700,
                 ),

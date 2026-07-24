@@ -40,28 +40,28 @@ final class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryContainer,
-          foregroundColor: AppColors.onPrimary,
-          elevation: 2,
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.accent,
+          elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primaryContainer,
-          foregroundColor: AppColors.onPrimary,
-          elevation: 2,
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.accent,
+          elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(foregroundColor: AppColors.primaryContainer),
+        style: TextButton.styleFrom(foregroundColor: AppColors.primary),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.inputFill,
         labelStyle: const TextStyle(color: AppColors.muted, fontSize: 12, fontWeight: FontWeight.w600),
-        prefixIconColor: AppColors.primaryContainer,
+        prefixIconColor: AppColors.primary,
         suffixIconColor: AppColors.outline,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -81,15 +81,15 @@ final class AppTheme {
         ),
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.primaryContainer,
+        backgroundColor: AppColors.primary,
         contentTextStyle: const TextStyle(color: AppColors.onPrimary, fontWeight: FontWeight.w600),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      dividerColor: AppColors.border,
+      dividerColor: AppColors.borderStrong,
       tabBarTheme: const TabBarThemeData(
         indicatorColor: AppColors.primary,
-        labelColor: AppColors.primaryContainer,
+        labelColor: AppColors.primary,
         unselectedLabelColor: AppColors.muted,
         labelStyle: TextStyle(fontWeight: FontWeight.w700),
       ),
@@ -97,8 +97,8 @@ final class AppTheme {
         color: AppColors.surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: AppColors.borderStrong),
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.border),
         ),
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(

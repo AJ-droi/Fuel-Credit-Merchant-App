@@ -24,85 +24,85 @@ class _DashboardTopBarState extends State<DashboardTopBar> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     return Container(
-      height: 80,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
-      ),
-      child: FutureBuilder<ApiResult<DashboardSummary>>(
-        future: _summaryFuture,
-        builder: (context, snapshot) {
-          var businessName = 'FUELCREDIT Merchant';
-          var merchantId = 'Merchant Dashboard';
+      width: double.infinity,
+      color: AppColors.primary,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(AppSpacing.md, 10, AppSpacing.sm, 16),
+          child: FutureBuilder<ApiResult<DashboardSummary>>(
+            future: _summaryFuture,
+            builder: (context, snapshot) {
+              var businessName = 'Merchant';
+              var merchantId = '';
 
-          final result = snapshot.data;
-          if (result is ApiSuccess<DashboardSummary>) {
-            businessName = result.data.data.businessName;
-            merchantId = result.data.data.merchantId;
-          }
+              final result = snapshot.data;
+              if (result is ApiSuccess<DashboardSummary>) {
+                businessName = result.data.data.businessName;
+                merchantId = result.data.data.merchantId;
+              }
 
-          return Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryContainer,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.4)),
-                ),
-                child: const Icon(Icons.person, color: AppColors.onPrimary, size: 20),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'FUELCREDIT',
-                      style: textTheme.headlineSmall?.copyWith(
-                        color: AppColors.primaryContainer,
-                        fontWeight: FontWeight.w900,
-                      ),
+              final title = businessName.isNotEmpty ? businessName : 'FUELCREDIT Merchant';
+
+              return Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withOpacity(0.15)),
                     ),
-                    Row(
+                    child: const Icon(Icons.local_gas_station_rounded, color: AppColors.accent, size: 22),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppColors.secondary,
-                            shape: BoxShape.circle,
+                        const Text(
+                          'Welcome back,',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.emeraldMuted,
                           ),
                         ),
-                        const SizedBox(width: AppSpacing.xs),
-                        Expanded(
-                          child: Text(
-                            businessName.isEmpty ? merchantId : businessName,
-                            style: textTheme.labelSmall,
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        if (merchantId.isNotEmpty)
+                          Text(
+                            merchantId,
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.white.withOpacity(0.55),
+                            ),
                           ),
-                        ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.settings_outlined,
-                  color: AppColors.primary,
-                ),
-              ),
-            ],
-          );
-        },
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.notifications_outlined, color: AppColors.accent),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }

@@ -9,8 +9,6 @@ class DashboardBottomShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     Widget navItem({
       required IconData icon,
       required String label,
@@ -21,22 +19,25 @@ class DashboardBottomShell extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: active ? AppColors.primaryContainer.withOpacity(0.12) : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-              border: active ? Border.all(color: AppColors.primary.withOpacity(0.35)) : null,
-            ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: active ? AppColors.primaryContainer : AppColors.muted),
+                Icon(
+                  icon,
+                  size: 22,
+                  color: active ? AppColors.primary : AppColors.slate400,
+                ),
+                const SizedBox(height: 4),
                 Text(
                   label,
-                  style: textTheme.labelSmall?.copyWith(
-                    color: active ? AppColors.primaryContainer : AppColors.muted,
-                    fontWeight: active ? FontWeight.w700 : FontWeight.w600,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                    color: active ? AppColors.primary : AppColors.slate400,
                   ),
                 ),
               ],
@@ -56,25 +57,25 @@ class DashboardBottomShell extends StatelessWidget {
             right: 0,
             bottom: 0,
             child: Container(
-              height: 78,
-              padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.sm, AppSpacing.sm, 10),
-              decoration: const BoxDecoration(
+              height: 72,
+              padding: const EdgeInsets.fromLTRB(4, 6, 4, 8),
+              decoration: BoxDecoration(
                 color: AppColors.navBar,
-                border: Border(top: BorderSide(color: AppColors.border)),
+                border: const Border(top: BorderSide(color: AppColors.slate200)),
                 boxShadow: [
                   BoxShadow(
-                    color: Color(0x0A3A3541),
-                    blurRadius: 8,
-                    offset: Offset(0, -2),
+                    color: AppColors.slate900.withOpacity(0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, -4),
                   ),
                 ],
               ),
               child: Row(
                 children: [
-                  navItem(icon: Icons.dashboard_rounded, label: 'Dashboard', active: true),
+                  navItem(icon: Icons.home_rounded, label: 'Home', active: true),
                   navItem(
-                    icon: Icons.local_gas_station_rounded,
-                    label: 'Fuel Sale',
+                    icon: Icons.bolt_rounded,
+                    label: 'Sell',
                     active: false,
                     onTap: () => Navigator.of(context).pushNamed(AppRouter.fuelSale),
                   ),
@@ -86,7 +87,7 @@ class DashboardBottomShell extends StatelessWidget {
                   ),
                   navItem(
                     icon: Icons.payments_outlined,
-                    label: 'Settlement',
+                    label: 'Settle',
                     active: false,
                     onTap: () => Navigator.of(context).pushNamed(AppRouter.settlement),
                   ),
@@ -105,18 +106,18 @@ class DashboardBottomShell extends StatelessWidget {
             right: AppSpacing.md,
             bottom: 72,
             child: SizedBox(
-              height: 64,
+              height: 52,
               child: FilledButton.icon(
                 onPressed: () => Navigator.of(context).pushNamed(AppRouter.fuelSale),
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.onPrimary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+                  foregroundColor: AppColors.accent,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
                 icon: const Icon(Icons.local_gas_station_rounded),
-                label: Text(
+                label: const Text(
                   'Sell Fuel',
-                  style: textTheme.headlineSmall?.copyWith(color: AppColors.onPrimary),
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
                 ),
               ),
             ),

@@ -1,92 +1,44 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/router/app_router.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/merchant_bottom_nav_style.dart';
 
 class PaymentAlertBottomNav extends StatelessWidget {
   const PaymentAlertBottomNav({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    Widget navItem({
-      required IconData icon,
-      required String label,
-      required bool active,
-      required VoidCallback onTap,
-    }) {
-      return Expanded(
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: active ? AppColors.primaryContainer.withOpacity(0.12) : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-              border: active ? Border.all(color: AppColors.primary.withOpacity(0.35)) : null,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, color: active ? AppColors.primaryContainer : AppColors.muted),
-                Text(
-                  label,
-                  style: textTheme.labelSmall?.copyWith(
-                    color: active ? AppColors.primaryContainer : AppColors.muted,
-                    fontWeight: active ? FontWeight.w700 : FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
     return Container(
-      height: 78,
-      padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.sm, AppSpacing.sm, 10),
-      decoration: const BoxDecoration(
-        color: AppColors.navBar,
-        border: Border(top: BorderSide(color: AppColors.border)),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x0A3A3541),
-            blurRadius: 8,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
+      height: 72,
+      padding: const EdgeInsets.fromLTRB(4, 6, 4, 8),
+      decoration: merchantNavBarDecoration(),
       child: Row(
         children: [
-          navItem(
-            icon: Icons.dashboard_rounded,
-            label: 'Dashboard',
+          merchantNavItem(
+            icon: Icons.home_rounded,
+            label: 'Home',
             active: false,
             onTap: () => Navigator.of(context).pushReplacementNamed(AppRouter.dashboard),
           ),
-          navItem(
-            icon: Icons.ev_station_rounded,
-            label: 'Fuel Sale',
+          merchantNavItem(
+            icon: Icons.bolt_rounded,
+            label: 'Sell',
             active: true,
             onTap: () => Navigator.of(context).pushReplacementNamed(AppRouter.fuelSale),
           ),
-          navItem(
+          merchantNavItem(
             icon: Icons.group_rounded,
             label: 'Staff',
             active: false,
             onTap: () => Navigator.of(context).pushNamed(AppRouter.management),
           ),
-          navItem(
-            icon: Icons.account_balance_wallet_outlined,
-            label: 'Settlement',
+          merchantNavItem(
+            icon: Icons.payments_outlined,
+            label: 'Settle',
             active: false,
             onTap: () => Navigator.of(context).pushNamed(AppRouter.settlement),
           ),
-          navItem(
+          merchantNavItem(
             icon: Icons.person_outline_rounded,
             label: 'Profile',
             active: false,

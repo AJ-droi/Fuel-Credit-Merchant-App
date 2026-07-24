@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/widgets/glass_card.dart';
 
 class LoginHeader extends StatelessWidget {
   const LoginHeader({super.key});
@@ -13,31 +12,42 @@ class LoginHeader extends StatelessWidget {
 
     return Column(
       children: [
-        GlassCard(
+        Container(
           padding: const EdgeInsets.all(AppSpacing.md),
-          borderRadius: BorderRadius.circular(14),
-          backgroundColor: AppColors.surfaceBright,
-          borderColor: AppColors.primary.withOpacity(0.35),
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
           child: const Icon(
             Icons.local_gas_station_rounded,
-            color: AppColors.primaryContainer,
+            color: AppColors.accent,
             size: 40,
           ),
         ),
         const SizedBox(height: AppSpacing.md),
-        RichText(
-          text: TextSpan(
-            style: textTheme.headlineLarge,
-            children: const [
-              TextSpan(text: 'FUEL '),
-              TextSpan(text: 'CREDIT', style: TextStyle(color: AppColors.secondary)),
-            ],
+        Text(
+          'FUELCREDIT',
+          style: textTheme.headlineLarge?.copyWith(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
           ),
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(
           'MERCHANT PORTAL',
-          style: textTheme.labelSmall?.copyWith(letterSpacing: 2.4),
+          style: textTheme.labelSmall?.copyWith(
+            letterSpacing: 2.4,
+            color: AppColors.slate500,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ],
     );

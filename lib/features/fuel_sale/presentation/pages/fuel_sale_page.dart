@@ -36,6 +36,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
   QrPaymentData? _qrPaymentData;
   Timer? _qrExpiryTimer;
   Duration _qrRemaining = Duration.zero;
+  int _paymentTab = 0; // 0 = Show QR, 1 = Purchase ID
 
   @override
   void initState() {
@@ -269,58 +270,80 @@ class _FuelSalePageState extends State<FuelSalePage> {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
+      backgroundColor: AppColors.slate50,
       body: Stack(
         children: [
-          SafeArea(
-            child: Column(
-              children: [
-                _TopBar(textTheme: textTheme),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.md,
-                      AppSpacing.md,
-                      AppSpacing.md,
-                      120,
-                    ),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 760),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+          Column(
+            children: [
+              _TopBar(textTheme: textTheme),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    120,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 760),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Column(
                             children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Transaction Engine'.toUpperCase(),
-                                      style: textTheme.labelSmall?.copyWith(
-                                        color: AppColors.secondary,
-                                        letterSpacing: 1.2,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Fuel Sale',
-                                      style: textTheme.headlineSmall,
-                                    ),
-                                  ],
+                              Container(
+                                width: 52,
+                                height: 52,
+                                decoration: BoxDecoration(
+                                  color: AppColors.accent,
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: const Icon(
+                                  Icons.local_gas_station_rounded,
+                                  color: AppColors.primaryDark,
+                                  size: 28,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              const Text(
+                                'Station Fuel Checkout',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Enter amount, then show QR or take the customer purchase ID.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.emeraldMuted,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: AppSpacing.lg),
-                          _stepOneCard(textTheme),
-                          const SizedBox(height: AppSpacing.md),
-                          _stepTwoCard(textTheme),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        _stepOneCard(textTheme),
+                        const SizedBox(height: AppSpacing.md),
+                        _paymentTabs(textTheme),
+                        const SizedBox(height: AppSpacing.md),
+                        if (_paymentTab == 0) _qrBlock(textTheme) else _idPaymentBlock(textTheme),
+                      ],
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
           const Positioned(
             left: 0,
@@ -333,9 +356,38 @@ class _FuelSalePageState extends State<FuelSalePage> {
     );
   }
 
+  Widget _paymentTabs(TextTheme textTheme) {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.slate200),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _PaymentTabButton(
+              label: 'Show QR',
+              selected: _paymentTab == 0,
+              onTap: () => setState(() => _paymentTab = 0),
+            ),
+          ),
+          Expanded(
+            child: _PaymentTabButton(
+              label: 'Purchase ID',
+              selected: _paymentTab == 1,
+              onTap: () => setState(() => _paymentTab = 1),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _stepOneCard(TextTheme textTheme) {
     return GlassCard(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(20),
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         children: [
@@ -345,24 +397,30 @@ class _FuelSalePageState extends State<FuelSalePage> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight.withOpacity(0.3),
+                  color: AppColors.primary.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
                 child: const Text(
                   '1',
-                  style: TextStyle(color: AppColors.primary),
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: Text('Volume & Value', style: textTheme.headlineSmall),
+                child: Text(
+                  'Volume & Value',
+                  style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                ),
               ),
               Text(
                 _isLoadingFuelPrice
                     ? 'Loading rate...'
                     : 'Rate: ${_currencySymbol(_currency)}${_fuelRate.toStringAsFixed(2)}/L',
-                style: textTheme.labelSmall,
+                style: textTheme.labelSmall?.copyWith(color: AppColors.slate500),
               ),
             ],
           ),
@@ -393,66 +451,30 @@ class _FuelSalePageState extends State<FuelSalePage> {
     );
   }
 
-  Widget _stepTwoCard(TextTheme textTheme) {
-    return GlassCard(
-      borderRadius: BorderRadius.circular(12),
-      padding: const EdgeInsets.all(AppSpacing.lg),
+  // Payment methods use Show QR / Purchase ID tabs above.
+
+  Widget _qrBlock(TextTheme textTheme) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        border: Border.all(color: AppColors.slate200),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                width: 32,
-                height: 32,
-                decoration: const BoxDecoration(
-                  color: Color(0x334AE176),
-                  shape: BoxShape.circle,
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                alignment: Alignment.center,
-                child: const Text(
-                  '2',
-                  style: TextStyle(color: AppColors.secondary),
-                ),
+                child: const Icon(Icons.qr_code_2_rounded, color: AppColors.primary),
               ),
-              const SizedBox(width: AppSpacing.sm),
-              Text('Payment Methods', style: textTheme.headlineSmall),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _qrBlock(textTheme),
-          const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              const Expanded(child: Divider(color: AppColors.border)),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                child: Text('OR', style: textTheme.labelSmall),
-              ),
-              const Expanded(child: Divider(color: AppColors.border)),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _idPaymentBlock(textTheme),
-        ],
-      ),
-    );
-  }
-
-  Widget _qrBlock(TextTheme textTheme) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: const Color(0x1A0D1C2D),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.qr_code_2_rounded, color: AppColors.secondary),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Column(
@@ -460,11 +482,11 @@ class _FuelSalePageState extends State<FuelSalePage> {
                   children: [
                     Text(
                       'QR Payment',
-                      style: textTheme.headlineSmall?.copyWith(fontSize: 18),
+                      style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                     ),
                     Text(
                       'Present this code to the customer to complete payment',
-                      style: textTheme.labelSmall,
+                      style: textTheme.labelSmall?.copyWith(color: AppColors.slate500),
                     ),
                   ],
                 ),
@@ -629,7 +651,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                             size: 18,
                             color: _isQrExpired
                                 ? AppColors.danger
-                                : AppColors.secondary,
+                                : AppColors.accent,
                           ),
                           const SizedBox(width: AppSpacing.sm),
                           Expanded(
@@ -640,7 +662,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                               style: textTheme.labelSmall?.copyWith(
                                 color: _isQrExpired
                                     ? AppColors.danger
-                                    : AppColors.secondary,
+                                    : AppColors.emeraldMuted,
                               ),
                             ),
                           ),
@@ -726,7 +748,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
-                  foregroundColor: AppColors.onPrimary,
+                  foregroundColor: AppColors.accent,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -739,14 +761,14 @@ class _FuelSalePageState extends State<FuelSalePage> {
                 icon: Icon(
                   _isGeneratingQr ? Icons.sync : Icons.qr_code_scanner,
                   size: 28,
-                  color: AppColors.onPrimary,
+                  color: AppColors.accent,
                 ),
                 label: Text(
                   _isGeneratingQr ? 'Generating...' : 'Generate Payment QR',
                   style: textTheme.titleMedium?.copyWith(
-                    color: AppColors.onPrimary,
+                    color: AppColors.accent,
                     fontWeight: FontWeight.w700,
-                    fontSize: 18,
+                    fontSize: 16,
                   ),
                 ),
               ),
@@ -761,16 +783,24 @@ class _FuelSalePageState extends State<FuelSalePage> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: const Color(0x1A0D1C2D),
-        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        border: Border.all(color: AppColors.slate200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.credit_card_rounded, color: AppColors.primary),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.secondaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.badge_outlined, color: Color(0xFFA16207)),
+              ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Column(
@@ -778,11 +808,11 @@ class _FuelSalePageState extends State<FuelSalePage> {
                   children: [
                     Text(
                       'Fuel Credit ID',
-                      style: textTheme.headlineSmall?.copyWith(fontSize: 18),
+                      style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                     ),
                     Text(
-                      '9-digit customer purchase ID',
-                      style: textTheme.labelSmall,
+                      'Enter the customer\'s 9-digit purchase ID',
+                      style: textTheme.labelSmall?.copyWith(color: AppColors.slate500),
                     ),
                   ],
                 ),
@@ -793,30 +823,36 @@ class _FuelSalePageState extends State<FuelSalePage> {
           TextField(
             controller: _customerIdController,
             keyboardType: TextInputType.number,
-            style: textTheme.bodyMedium?.copyWith(color: AppColors.primary),
+            style: textTheme.bodyMedium?.copyWith(
+              color: AppColors.primary,
+              fontFamily: 'monospace',
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.5,
+            ),
             decoration: InputDecoration(
-              hintText: 'Enter purchase ID (e.g. 700237721)',
+              hintText: 'e.g. 700237721',
               hintStyle: textTheme.bodyMedium?.copyWith(color: AppColors.muted),
               filled: true,
-              fillColor: AppColors.surface,
+              fillColor: AppColors.slate50,
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.border),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.slate200),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.primary),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
               ),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton.icon(
+            child: FilledButton.icon(
               onPressed: _isProcessingIdPayment ? null : _processIdPayment,
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.primary),
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.accent,
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -825,18 +861,15 @@ class _FuelSalePageState extends State<FuelSalePage> {
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.accent,
+                      ),
                     )
-                  : const Icon(
-                      Icons.verified_user_rounded,
-                      color: AppColors.primary,
-                    ),
+                  : const Icon(Icons.verified_user_rounded),
               label: Text(
-                _isProcessingIdPayment ? 'Processing...' : 'Process ID Payment',
-                style: textTheme.bodyLarge?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w700,
-                ),
+                _isProcessingIdPayment ? 'Processing...' : 'Authorize Fuel Purchase',
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
               ),
             ),
           ),
@@ -860,9 +893,9 @@ class _FuelSalePageState extends State<FuelSalePage> {
             vertical: AppSpacing.sm,
           ),
           decoration: BoxDecoration(
-            color: const Color(0x260D1C2D),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.borderStrong),
+            color: AppColors.slate50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.slate200),
           ),
           child: Row(
             children: [
@@ -908,9 +941,9 @@ class _FuelSalePageState extends State<FuelSalePage> {
             vertical: AppSpacing.sm,
           ),
           decoration: BoxDecoration(
-            color: const Color(0x260D1C2D),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.borderStrong),
+            color: AppColors.slate50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.slate200),
           ),
           child: Row(
             children: [
@@ -931,7 +964,8 @@ class _FuelSalePageState extends State<FuelSalePage> {
               Text(
                 'L',
                 style: textTheme.bodyMedium?.copyWith(
-                  color: AppColors.secondary,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -985,32 +1019,76 @@ class _TopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 64,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      decoration: const BoxDecoration(
-        color: Color(0x1A051424),
-        border: Border(bottom: BorderSide(color: AppColors.border)),
+      width: double.infinity,
+      color: AppColors.primary,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 4, 12, 12),
+          child: Row(
+            children: [
+              IconButton(
+                onPressed: () => Navigator.of(context).maybePop(),
+                icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.white),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Fuel checkout',
+                      style: textTheme.labelSmall?.copyWith(color: AppColors.emeraldMuted),
+                    ),
+                    Text(
+                      'Sell Fuel',
+                      style: textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.notifications_outlined, color: AppColors.accent),
+            ],
+          ),
+        ),
       ),
-      child: Row(
-        children: [
-          const Icon(Icons.local_gas_station_rounded, color: AppColors.primary),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            'FUELCREDIT',
-            style: textTheme.headlineSmall?.copyWith(
-              color: AppColors.primary,
+    );
+  }
+}
+
+class _PaymentTabButton extends StatelessWidget {
+  const _PaymentTabButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? AppColors.primary : Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 11),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
               fontWeight: FontWeight.w700,
+              color: selected ? Colors.white : AppColors.slate700,
             ),
           ),
-          const Spacer(),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.notifications_none_rounded,
-              color: AppColors.primary,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

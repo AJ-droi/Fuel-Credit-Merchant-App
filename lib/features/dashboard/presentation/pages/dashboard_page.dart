@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../widgets/widgets.dart';
 
@@ -9,11 +10,12 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.slate50,
       body: Stack(
         children: [
           Column(
             children: [
-              const SafeArea(bottom: false, child: DashboardTopBar()),
+              const DashboardTopBar(),
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(
@@ -28,8 +30,6 @@ class DashboardPage extends StatelessWidget {
                       DashboardKpiGrid(),
                       SizedBox(height: AppSpacing.lg),
                       DashboardTransactions(),
-                      SizedBox(height: AppSpacing.lg),
-                      // DashboardThroughput(),
                     ],
                   ),
                 ),
