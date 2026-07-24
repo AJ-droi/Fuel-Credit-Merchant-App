@@ -5,7 +5,12 @@ import '../../../../core/network/app_services.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../management/data/models/paginated_sales_model.dart';
 import '../../data/models/merchant_transaction.dart';
+
+enum _TxnRange { all, today, week, month }
+
+enum _TxnStatusFilter { all, completed, pending, failed }
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -15,19 +20,99 @@ class TransactionsPage extends StatefulWidget {
 }
 
 class _TransactionsPageState extends State<TransactionsPage> {
-  late Future<ApiResult<List<MerchantTransaction>>> _transactionsFuture;
+  final List<MerchantTransaction> _items = [];
+  var _page = 1;
+  var _hasMore = false;
+  var _isLoading = false;
+  var _initialized = false;
+  String? _error;
+  _TxnRange _range = _TxnRange.all;
+  _TxnStatusFilter _status = _TxnStatusFilter.all;
+  String _sortBy = 'createdAt';
+  String _sortOrder = 'desc';
 
   @override
   void initState() {
     super.initState();
-    _transactionsFuture = _loadTransactions();
+    _load(reset: true);
   }
 
-  Future<ApiResult<List<MerchantTransaction>>> _loadTransactions() {
-    return AppServices.instance.transactionsRepository.fetchTransactions(
-      page: 1,
+  ({String? fromDate, String? toDate}) _dateRange() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    switch (_range) {
+      case _TxnRange.all:
+        return (fromDate: null, toDate: null);
+      case _TxnRange.today:
+        return (
+          fromDate: today.toIso8601String(),
+          toDate: today.add(const Duration(days: 1)).toIso8601String(),
+        );
+      case _TxnRange.week:
+        return (
+          fromDate: today.subtract(const Duration(days: 7)).toIso8601String(),
+          toDate: now.toIso8601String(),
+        );
+      case _TxnRange.month:
+        return (
+          fromDate: today.subtract(const Duration(days: 30)).toIso8601String(),
+          toDate: now.toIso8601String(),
+        );
+    }
+  }
+
+  String? _statusQuery() {
+    switch (_status) {
+      case _TxnStatusFilter.all:
+        return null;
+      case _TxnStatusFilter.completed:
+        return 'completed';
+      case _TxnStatusFilter.pending:
+        return 'awaiting_confirmation';
+      case _TxnStatusFilter.failed:
+        return 'failed';
+    }
+  }
+
+  Future<void> _load({required bool reset}) async {
+    if (_isLoading) return;
+
+    if (reset) {
+      _page = 1;
+      _items.clear();
+      _error = null;
+    }
+
+    setState(() => _isLoading = true);
+
+    final range = _dateRange();
+    final result = await AppServices.instance.transactionsRepository.fetchTransactions(
+      page: _page,
       limit: 20,
+      fromDate: range.fromDate,
+      toDate: range.toDate,
+      status: _statusQuery(),
+      sortBy: _sortBy,
+      sortOrder: _sortOrder,
     );
+
+    if (!mounted) return;
+
+    if (result case ApiSuccess<PaginatedSalesResponse> success) {
+      setState(() {
+        _items.addAll(success.data.items);
+        _hasMore = success.data.hasMore;
+        _isLoading = false;
+        _initialized = true;
+      });
+    } else if (result case ApiFailure<PaginatedSalesResponse> failure) {
+      setState(() {
+        _error = failure.error.message;
+        _isLoading = false;
+        _initialized = true;
+      });
+    }
   }
 
   @override
@@ -40,6 +125,13 @@ class _TransactionsPageState extends State<TransactionsPage> {
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.onBackground,
         elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: 'Refresh',
+            onPressed: _isLoading ? null : () => _load(reset: true),
+            icon: const Icon(Icons.refresh_rounded),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(
@@ -48,54 +140,180 @@ class _TransactionsPageState extends State<TransactionsPage> {
           AppSpacing.md,
           AppSpacing.md,
         ),
-        child: FutureBuilder<ApiResult<List<MerchantTransaction>>>(
-          future: _transactionsFuture,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            final result = snapshot.data!;
-            switch (result) {
-              case ApiSuccess<List<MerchantTransaction>> success:
-                if (success.data.isEmpty) {
-                  return const Center(child: Text('No transactions found.'));
-                }
-
-                return ListView.separated(
-                  itemCount: success.data.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
-                  itemBuilder: (context, index) {
-                    return _TransactionListTile(item: success.data[index]);
-                  },
-                );
-              case ApiFailure<List<MerchantTransaction>> failure:
-                return Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        failure.error.message,
-                        style: textTheme.bodyLarge,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _transactionsFuture = _loadTransactions();
-                          });
-                        },
-                        child: const Text('Retry'),
-                      ),
-                    ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Sales history',
+                    style: textTheme.titleMedium?.copyWith(
+                      color: AppColors.onBackground,
+                    ),
                   ),
-                );
-            }
-          },
+                ),
+                DropdownButton<String>(
+                  value: '$_sortBy|$_sortOrder',
+                  underline: const SizedBox.shrink(),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'createdAt|desc',
+                      child: Text('Newest'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'createdAt|asc',
+                      child: Text('Oldest'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'amount|desc',
+                      child: Text('Amount high'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'amount|asc',
+                      child: Text('Amount low'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value == null) return;
+                    final parts = value.split('|');
+                    setState(() {
+                      _sortBy = parts[0];
+                      _sortOrder = parts[1];
+                    });
+                    _load(reset: true);
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: _TxnRange.values.map((range) {
+                  final selected = _range == range;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: AppSpacing.xs),
+                    child: FilterChip(
+                      label: Text(_rangeLabel(range)),
+                      selected: selected,
+                      onSelected: (_) {
+                        setState(() => _range = range);
+                        _load(reset: true);
+                      },
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: _TxnStatusFilter.values.map((status) {
+                  final selected = _status == status;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: AppSpacing.xs),
+                    child: FilterChip(
+                      label: Text(_statusFilterLabel(status)),
+                      selected: selected,
+                      onSelected: (_) {
+                        setState(() => _status = status);
+                        _load(reset: true);
+                      },
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Expanded(child: _buildList(textTheme)),
+          ],
         ),
       ),
     );
+  }
+
+  Widget _buildList(TextTheme textTheme) {
+    if (!_initialized && _isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null && _items.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _error!,
+              style: textTheme.bodyLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextButton(
+              onPressed: () => _load(reset: true),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_items.isEmpty && !_isLoading) {
+      return const Center(child: Text('No transactions found.'));
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => _load(reset: true),
+      child: ListView.separated(
+        itemCount: _items.length + (_hasMore || _isLoading ? 1 : 0),
+        separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+        itemBuilder: (context, index) {
+          if (index >= _items.length) {
+            if (_isLoading) {
+              return const Padding(
+                padding: EdgeInsets.all(AppSpacing.md),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+            return TextButton(
+              onPressed: () {
+                _page += 1;
+                _load(reset: false);
+              },
+              child: const Text('Load more'),
+            );
+          }
+          return _TransactionListTile(item: _items[index]);
+        },
+      ),
+    );
+  }
+
+  String _rangeLabel(_TxnRange range) {
+    switch (range) {
+      case _TxnRange.all:
+        return 'All time';
+      case _TxnRange.today:
+        return 'Today';
+      case _TxnRange.week:
+        return '7 days';
+      case _TxnRange.month:
+        return '30 days';
+    }
+  }
+
+  String _statusFilterLabel(_TxnStatusFilter status) {
+    switch (status) {
+      case _TxnStatusFilter.all:
+        return 'All status';
+      case _TxnStatusFilter.completed:
+        return 'Completed';
+      case _TxnStatusFilter.pending:
+        return 'Pending';
+      case _TxnStatusFilter.failed:
+        return 'Failed';
+    }
   }
 }
 

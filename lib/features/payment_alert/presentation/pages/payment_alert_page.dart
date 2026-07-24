@@ -145,18 +145,17 @@ class PaymentAlertPage extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: AppSpacing.lg),
-                            SizedBox(
-                              width: double.infinity,
-                              child: FilledButton.icon(
+                            if (_isSuccess) ...[
+                              SizedBox(
+                                width: double.infinity,
+                                child: FilledButton.icon(
                                   onPressed: () => Navigator.of(context)
                                       .pushNamedAndRemoveUntil(
-                                        AppRouter.dashboard,
+                                        AppRouter.fuelSale,
                                         (route) => false,
                                       ),
                                   style: FilledButton.styleFrom(
-                                    backgroundColor: _isSuccess
-                                        ? AppColors.primary
-                                        : AppColors.danger,
+                                    backgroundColor: AppColors.primary,
                                     foregroundColor: AppColors.onPrimary,
                                     padding: const EdgeInsets.symmetric(
                                       vertical: AppSpacing.md,
@@ -165,16 +164,73 @@ class PaymentAlertPage extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(36),
                                     ),
                                   ),
-                                  icon: const Icon(Icons.arrow_forward),
+                                  icon: const Icon(Icons.add_shopping_cart_rounded),
                                   label: Text(
-                                    'Back to Dashboard',
+                                    'Make Another Sale',
                                     style: textTheme.bodyLarge?.copyWith(
                                       color: AppColors.onPrimary,
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
-                            ),
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: () => Navigator.of(context)
+                                      .pushNamedAndRemoveUntil(
+                                        AppRouter.dashboard,
+                                        (route) => false,
+                                      ),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: AppColors.onBackground,
+                                    side: const BorderSide(color: AppColors.border),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: AppSpacing.md,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(36),
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.dashboard_outlined),
+                                  label: Text(
+                                    'Back to Dashboard',
+                                    style: textTheme.bodyLarge?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ] else
+                              SizedBox(
+                                width: double.infinity,
+                                child: FilledButton.icon(
+                                  onPressed: () => Navigator.of(context)
+                                      .pushNamedAndRemoveUntil(
+                                        AppRouter.fuelSale,
+                                        (route) => false,
+                                      ),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: AppColors.danger,
+                                    foregroundColor: AppColors.onPrimary,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: AppSpacing.md,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(36),
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.refresh_rounded),
+                                  label: Text(
+                                    'Try New Sale',
+                                    style: textTheme.bodyLarge?.copyWith(
+                                      color: AppColors.onPrimary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),

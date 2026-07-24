@@ -6,6 +6,7 @@ import '../../../../core/network/app_services.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../management/data/models/paginated_sales_model.dart';
 import '../../../transactions/data/models/merchant_transaction.dart';
 
 class DashboardTransactions extends StatefulWidget {
@@ -16,7 +17,7 @@ class DashboardTransactions extends StatefulWidget {
 }
 
 class _DashboardTransactionsState extends State<DashboardTransactions> {
-  late Future<ApiResult<List<MerchantTransaction>>> _transactionsFuture;
+  late Future<ApiResult<PaginatedSalesResponse>> _transactionsFuture;
 
   @override
   void initState() {
@@ -46,7 +47,7 @@ class _DashboardTransactionsState extends State<DashboardTransactions> {
           ],
         ),
         const SizedBox(height: AppSpacing.sm),
-        FutureBuilder<ApiResult<List<MerchantTransaction>>>(
+        FutureBuilder<ApiResult<PaginatedSalesResponse>>(
           future: _transactionsFuture,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
@@ -55,20 +56,20 @@ class _DashboardTransactionsState extends State<DashboardTransactions> {
 
             final result = snapshot.data!;
             switch (result) {
-              case ApiSuccess<List<MerchantTransaction>> success:
-                if (success.data.isEmpty) {
+              case ApiSuccess<PaginatedSalesResponse> success:
+                if (success.data.items.isEmpty) {
                   return const _TransactionsEmptyState();
                 }
 
                 return Column(
                   children: [
-                    for (final item in success.data) ...[
+                    for (final item in success.data.items) ...[
                       _TransactionCard(item: item),
                       const SizedBox(height: AppSpacing.sm),
                     ],
                   ],
                 );
-              case ApiFailure<List<MerchantTransaction>> failure:
+              case ApiFailure<PaginatedSalesResponse> failure:
                 return _TransactionsErrorState(
                   message: failure.error.message,
                   onRetry: () {

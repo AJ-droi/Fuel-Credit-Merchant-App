@@ -87,13 +87,13 @@ final class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       dividerColor: AppColors.border,
-      tabBarTheme: const TabBarTheme(
+      tabBarTheme: const TabBarThemeData(
         indicatorColor: AppColors.primary,
         labelColor: AppColors.primaryContainer,
         unselectedLabelColor: AppColors.muted,
         labelStyle: TextStyle(fontWeight: FontWeight.w700),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
