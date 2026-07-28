@@ -3,6 +3,8 @@ final class ApiEndpoints {
 
   static const String login = '/auth/login';
   static const String changePassword = '/auth/change-password';
+  static const String forgotPassword = '/auth/forgot-password';
+  static const String resetPassword = '/auth/reset-password';
 
   static const String merchantDashboard = '/merchant/dashboard';
   static const String dashboardSummary = merchantDashboard;

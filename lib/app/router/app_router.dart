@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../features/account/presentation/pages/account_page.dart';
+import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/auth/presentation/pages/reset_password_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/fuel_sale/presentation/pages/fuel_sale_page.dart';
 import '../../features/payment_alert/presentation/pages/payment_alert_page.dart';
@@ -17,6 +19,8 @@ final class AppRouter {
   const AppRouter._();
 
   static const String login = '/';
+  static const String forgotPassword = '/forgot-password';
+  static const String resetPassword = '/reset-password';
   static const String dashboard = '/dashboard';
   static const String fuelSale = '/fuel-sale';
   static const String paymentAlert = '/payment-alert';
@@ -30,10 +34,32 @@ final class AppRouter {
   static const String staffDetail = '/management/staff';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
+    final routeName = settings.name ?? '';
+    final routeUri = Uri.tryParse(routeName);
+
+    if (routeName == resetPassword || routeName.startsWith('$resetPassword?')) {
+      final args = _extractResetArgs(settings.arguments, routeUri);
+      return MaterialPageRoute<void>(
+        builder: (_) => ResetPasswordPage(
+          email: args.email,
+          initialToken: args.token,
+        ),
+        settings: settings,
+      );
+    }
+
     switch (settings.name) {
       case login:
         return MaterialPageRoute<void>(
           builder: (_) => const LoginPage(),
+          settings: settings,
+        );
+      case forgotPassword:
+        final initialEmail = settings.arguments is String
+            ? settings.arguments as String
+            : '';
+        return MaterialPageRoute<void>(
+          builder: (_) => ForgotPasswordPage(initialEmail: initialEmail),
           settings: settings,
         );
       case dashboard:
@@ -125,5 +151,29 @@ final class AppRouter {
           settings: settings,
         );
     }
+  }
+
+  static ResetPasswordArgs _extractResetArgs(dynamic arguments, Uri? routeUri) {
+    var email = '';
+    var token = '';
+
+    if (arguments is ResetPasswordArgs) {
+      email = arguments.email;
+      token = arguments.token;
+    } else if (arguments is String) {
+      email = arguments;
+    } else if (arguments is Map) {
+      email = (arguments['email'] ?? '').toString();
+      token = (arguments['token'] ?? '').toString();
+    }
+
+    token = token.isNotEmpty
+        ? token
+        : (routeUri?.queryParameters['token'] ?? '');
+    email = email.isNotEmpty
+        ? email
+        : (routeUri?.queryParameters['email'] ?? '');
+
+    return ResetPasswordArgs(email: email, token: token);
   }
 }

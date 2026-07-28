@@ -44,5 +44,38 @@ class AuthRepository {
     );
   }
 
+  Future<ApiResult<String>> forgotPassword({required String email}) {
+    return _apiClient.post<String>(
+      ApiEndpoints.forgotPassword,
+      data: <String, dynamic>{'email': email.trim().toLowerCase()},
+      parser: (json) {
+        if (json is Map<String, dynamic>) {
+          return (json['message'] as String?) ??
+              'If an account exists with this email, a password reset link has been sent';
+        }
+        return 'If an account exists with this email, a password reset link has been sent';
+      },
+    );
+  }
+
+  Future<ApiResult<String>> resetPassword({
+    required String token,
+    required String newPassword,
+  }) {
+    return _apiClient.post<String>(
+      ApiEndpoints.resetPassword,
+      data: <String, dynamic>{
+        'token': token.trim(),
+        'newPassword': newPassword,
+      },
+      parser: (json) {
+        if (json is Map<String, dynamic>) {
+          return (json['message'] as String?) ?? 'Password reset successfully';
+        }
+        return 'Password reset successfully';
+      },
+    );
+  }
+
   Future<void> logout() => _tokenStorage.clear();
 }
