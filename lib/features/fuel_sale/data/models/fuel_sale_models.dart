@@ -1,27 +1,27 @@
 class CreateFuelSaleRequest {
   const CreateFuelSaleRequest({
     required this.purchaseId,
-    required this.amount,
+    required this.fuelLitres,
   });
 
   final String purchaseId;
-  final double amount;
+  final double fuelLitres;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
         'purchaseId': purchaseId,
-        'amount': amount,
+        'fuelLitres': fuelLitres,
       };
 }
 
 class GenerateQrRequest {
   const GenerateQrRequest({
-    required this.amount,
+    required this.fuelLitres,
   });
 
-  final double amount;
+  final double fuelLitres;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'amount': amount,
+        'fuelLitres': fuelLitres,
       };
 }
 
@@ -32,6 +32,7 @@ class FuelSaleResponse {
     this.amount = 0,
     this.fuelLitres = 0,
     this.pricePerLitre = 0,
+    this.expiresAt,
   });
 
   final String transactionId;
@@ -39,17 +40,27 @@ class FuelSaleResponse {
   final double amount;
   final double fuelLitres;
   final double pricePerLitre;
+  final DateTime? expiresAt;
+
+  bool get isAwaitingConfirmation {
+    final s = status.toLowerCase();
+    return s == 'awaiting_confirmation' || s == 'pending';
+  }
+
+  bool get isCompleted => status.toLowerCase() == 'completed';
 
   factory FuelSaleResponse.fromJson(Map<String, dynamic> json) {
     final data = json['data'] is Map<String, dynamic>
         ? json['data'] as Map<String, dynamic>
         : json;
     return FuelSaleResponse(
-      transactionId: (data['transactionId'] ?? '').toString(),
+      transactionId: (data['transactionId'] ?? data['id'] ?? data['_id'] ?? '')
+          .toString(),
       status: (data['status'] ?? '').toString(),
       amount: _toDouble(data['amount']),
       fuelLitres: _toDouble(data['fuelLitres']),
       pricePerLitre: _toDouble(data['pricePerLitre']),
+      expiresAt: DateTime.tryParse((data['expiresAt'] ?? '').toString()),
     );
   }
 }

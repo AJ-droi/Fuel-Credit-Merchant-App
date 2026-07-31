@@ -42,49 +42,34 @@ class _DashboardKpiGridState extends State<DashboardKpiGrid> {
                 title: 'Today Sales',
                 value: summary.today.salesCount.toString(),
                 suffix: '',
-                meta: summary.businessName,
+                meta: 'Sales completed today',
                 icon: Icons.receipt_long_rounded,
                 iconColor: AppColors.primary,
                 backgroundColor: AppColors.kpiSalesBg,
               ),
               KpiCardModel(
-                title: 'Gross Amount',
+                title: "Today's Gross",
                 value: _currency(summary.today.grossAmount),
                 suffix: '',
-                meta: 'Unsettled: ${_currency(summary.today.unsettledAmount)}',
+                meta: 'Total sales amount',
                 icon: Icons.payments_outlined,
                 iconColor: const Color(0xFFA16207),
                 backgroundColor: AppColors.kpiGrossBg,
-              ),
-              KpiCardModel(
-                title: 'Pending Settlements',
-                value: summary.pendingSettlements.count.toString(),
-                suffix: '',
-                meta: _currency(summary.pendingSettlements.totalAmount),
-                icon: Icons.account_balance_wallet_outlined,
-                iconColor: AppColors.slate700,
-                backgroundColor: AppColors.kpiSettlementBg,
-                chip: summary.merchantId,
               ),
             ];
 
             return LayoutBuilder(
               builder: (context, constraints) {
-                final isDesktop = constraints.maxWidth > 860;
                 final isWide = constraints.maxWidth > 520;
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: cards.length,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: isDesktop || isWide ? 3 : 1,
+                    crossAxisCount: isWide ? 2 : 1,
                     mainAxisSpacing: AppSpacing.sm,
                     crossAxisSpacing: AppSpacing.sm,
-                    childAspectRatio: isDesktop
-                        ? 2.35
-                        : isWide
-                            ? 1.55
-                            : 3.1,
+                    childAspectRatio: isWide ? 2.1 : 3.1,
                   ),
                   itemBuilder: (_, index) => _KpiCard(model: cards[index]),
                 );
@@ -95,7 +80,8 @@ class _DashboardKpiGridState extends State<DashboardKpiGrid> {
               message: failure.error.message,
               onRetry: () {
                 setState(() {
-                  _summaryFuture = AppServices.instance.dashboardRepository.fetchSummary();
+                  _summaryFuture =
+                      AppServices.instance.dashboardRepository.fetchSummary();
                 });
               },
             );
@@ -161,35 +147,15 @@ class _KpiCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          if (model.chip != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(6),
-                color: AppColors.primary.withOpacity(0.1),
-                border: Border.all(color: AppColors.primary.withOpacity(0.25)),
-              ),
-              child: Text(
-                model.chip!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: textTheme.labelSmall?.copyWith(
-                  color: AppColors.primary,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            )
-          else
-            Text(
-              model.meta,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: textTheme.labelSmall?.copyWith(
-                color: AppColors.muted,
-                fontSize: 10,
-              ),
+          Text(
+            model.meta,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.labelSmall?.copyWith(
+              color: AppColors.muted,
+              fontSize: 10,
             ),
+          ),
         ],
       ),
     );

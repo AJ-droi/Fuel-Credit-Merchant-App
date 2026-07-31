@@ -326,6 +326,8 @@ class _TransactionListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final statusColor = _statusColor(item);
+    final title =
+        item.businessName.isEmpty ? item.referenceCode : item.businessName;
 
     return GlassCard(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -337,39 +339,83 @@ class _TransactionListTile extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  item.businessName.isEmpty ? item.referenceCode : item.businessName,
+                  title,
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
                   style: textTheme.bodyLarge?.copyWith(
                     color: AppColors.onBackground,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: statusColor.withOpacity(0.3)),
-                ),
-                child: Text(
-                  _statusLabel(item.status),
-                  style: textTheme.labelSmall?.copyWith(color: statusColor),
+              const SizedBox(width: AppSpacing.sm),
+              Flexible(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: statusColor.withOpacity(0.3)),
+                    ),
+                    child: Text(
+                      _statusLabel(item.status),
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.labelSmall?.copyWith(color: statusColor),
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          Wrap(
-            spacing: AppSpacing.lg,
-            runSpacing: AppSpacing.sm,
+          _MetaBlock(
+            label: 'Reference',
+            value: item.referenceCode,
+            fullWidth: true,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
             children: [
-              _MetaBlock(label: 'Reference', value: item.referenceCode),
-              _MetaBlock(label: 'Amount', value: _currency(item.amount)),
-              _MetaBlock(label: 'Fuel Litres', value: _litresLabel(item.fuelLitres)),
-              _MetaBlock(label: 'Method', value: item.disbursementMethod.toUpperCase()),
-              _MetaBlock(label: 'Price/L', value: _currency(item.pricePerLitre)),
-              _MetaBlock(label: 'Date', value: _fullDateLabel(item.createdAt)),
+              Expanded(
+                child: _MetaBlock(label: 'Amount', value: _currency(item.amount)),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _MetaBlock(
+                  label: 'Fuel Litres',
+                  value: _litresLabel(item.fuelLitres),
+                ),
+              ),
             ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              Expanded(
+                child: _MetaBlock(
+                  label: 'Method',
+                  value: item.disbursementMethod.toUpperCase(),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _MetaBlock(
+                  label: 'Price/L',
+                  value: _currency(item.pricePerLitre),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          _MetaBlock(
+            label: 'Date',
+            value: _fullDateLabel(item.createdAt),
+            fullWidth: true,
           ),
         ],
       ),
@@ -381,27 +427,34 @@ class _MetaBlock extends StatelessWidget {
   const _MetaBlock({
     required this.label,
     required this.value,
+    this.fullWidth = false,
   });
 
   final String label;
   final String value;
+  final bool fullWidth;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
     return SizedBox(
-      width: 140,
+      width: fullWidth ? double.infinity : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label.toUpperCase(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: textTheme.labelSmall?.copyWith(color: AppColors.outline),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             value,
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
             style: textTheme.bodyMedium?.copyWith(color: AppColors.onBackground),
           ),
         ],

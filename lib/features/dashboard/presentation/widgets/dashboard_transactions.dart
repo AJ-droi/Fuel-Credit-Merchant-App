@@ -17,15 +17,15 @@ class DashboardTransactions extends StatefulWidget {
 }
 
 class _DashboardTransactionsState extends State<DashboardTransactions> {
+  static const _limit = 5;
+
   late Future<ApiResult<PaginatedSalesResponse>> _transactionsFuture;
 
   @override
   void initState() {
     super.initState();
-    _transactionsFuture = AppServices.instance.transactionsRepository.fetchTransactions(
-      page: 1,
-      limit: 3,
-    );
+    _transactionsFuture = AppServices.instance.transactionsRepository
+        .fetchTransactions(page: 1, limit: _limit);
   }
 
   @override
@@ -41,7 +41,8 @@ class _DashboardTransactionsState extends State<DashboardTransactions> {
               child: Text('Recent Transactions', style: textTheme.headlineSmall),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pushNamed(AppRouter.transactions),
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(AppRouter.transactions),
               child: const Text('View All'),
             ),
           ],
@@ -74,11 +75,9 @@ class _DashboardTransactionsState extends State<DashboardTransactions> {
                   message: failure.error.message,
                   onRetry: () {
                     setState(() {
-                      _transactionsFuture =
-                          AppServices.instance.transactionsRepository.fetchTransactions(
-                        page: 1,
-                        limit: 3,
-                      );
+                      _transactionsFuture = AppServices
+                          .instance.transactionsRepository
+                          .fetchTransactions(page: 1, limit: _limit);
                     });
                   },
                 );
@@ -103,80 +102,104 @@ class _TransactionCard extends StatelessWidget {
     return GlassCard(
       padding: const EdgeInsets.all(AppSpacing.md),
       borderRadius: BorderRadius.circular(12),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.14),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: statusColor.withOpacity(0.35)),
-            ),
-            child: Icon(
-              item.isSuccessful
-                  ? Icons.check_circle
-                  : item.isPending
-                      ? Icons.schedule
-                      : Icons.error_outline,
-              color: statusColor,
-              size: 18,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.referenceCode,
-                  style: textTheme.bodyMedium?.copyWith(color: AppColors.onBackground),
-                ),
-                Text(
-                  _timeLabel(item.createdAt),
-                  style: textTheme.labelSmall,
-                ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                _litresLabel(item.fuelLitres),
-                style: textTheme.bodyMedium?.copyWith(color: AppColors.onBackground),
-              ),
-              Text(
-                item.disbursementMethod.toUpperCase(),
-                style: textTheme.labelSmall?.copyWith(fontStyle: FontStyle.italic),
-              ),
-            ],
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                _currency(item.amount),
-                style: textTheme.bodyMedium?.copyWith(color: statusColor),
-              ),
-              Container(
-                margin: const EdgeInsets.only(top: AppSpacing.xs),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  color: statusColor.withOpacity(0.12),
-                  border: Border.all(color: statusColor.withOpacity(0.3)),
-                ),
+              Expanded(
                 child: Text(
-                  _statusLabel(item.status),
-                  style: textTheme.labelSmall?.copyWith(
-                    color: statusColor,
-                    fontSize: 10,
+                  _litresLabel(item.fuelLitres),
+                  style: textTheme.titleMedium?.copyWith(
+                    color: AppColors.onBackground,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Flexible(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: statusColor.withOpacity(0.12),
+                      border: Border.all(color: statusColor.withOpacity(0.3)),
+                    ),
+                    child: Text(
+                      _statusLabel(item.status),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.labelSmall?.copyWith(
+                        color: statusColor,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                      ),
+                    ),
                   ),
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Wrap(
+            spacing: AppSpacing.md,
+            runSpacing: AppSpacing.xs,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              _MetaChip(
+                label: 'Type',
+                value: _purchaseTypeLabel(item.disbursementMethod),
+              ),
+              _MetaChip(
+                label: 'Created',
+                value: _createdAtLabel(item.createdAt),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetaChip extends StatelessWidget {
+  const _MetaChip({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 0, maxWidth: 220),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label.toUpperCase(),
+            style: textTheme.labelSmall?.copyWith(
+              color: AppColors.slate500,
+              fontSize: 9,
+              letterSpacing: 0.6,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            maxLines: 2,
+            softWrap: true,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.bodySmall?.copyWith(
+              color: AppColors.onBackground,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -253,33 +276,55 @@ String _statusLabel(String status) {
   return '${status[0].toUpperCase()}${status.substring(1).toLowerCase()}';
 }
 
-String _currency(double amount) {
-  return '₦${amount.toStringAsFixed(0)}';
-}
-
 String _litresLabel(double litres) {
   if (litres == litres.roundToDouble()) {
-    return '${litres.toStringAsFixed(0)}L';
+    return '${litres.toStringAsFixed(0)} L';
   }
-  return '${litres.toStringAsFixed(1)}L';
+  return '${litres.toStringAsFixed(1)} L';
 }
 
-String _timeLabel(DateTime? createdAt) {
+String _purchaseTypeLabel(String method) {
+  final normalized = method.trim().toLowerCase();
+  switch (normalized) {
+    case 'qr':
+      return 'QR';
+    case 'purchase_id':
+    case 'purchase-id':
+    case 'purchaseid':
+      return 'Purchase ID';
+    default:
+      if (method.isEmpty) return 'Unknown';
+      return method
+          .replaceAll('_', ' ')
+          .split(' ')
+          .where((part) => part.isNotEmpty)
+          .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
+          .join(' ');
+  }
+}
+
+String _createdAtLabel(DateTime? createdAt) {
   if (createdAt == null) {
-    return 'Unknown time';
+    return 'Unknown';
   }
-
-  final now = DateTime.now().toUtc();
-  final difference = now.difference(createdAt.toUtc());
-
-  if (difference.inMinutes < 1) {
-    return 'Just now';
-  }
-  if (difference.inHours < 1) {
-    return '${difference.inMinutes} mins ago';
-  }
-  if (difference.inDays < 1) {
-    return '${difference.inHours} hrs ago';
-  }
-  return '${difference.inDays} days ago';
+  final local = createdAt.toLocal();
+  const months = <String>[
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  final day = local.day.toString().padLeft(2, '0');
+  final month = months[local.month - 1];
+  final hour = local.hour.toString().padLeft(2, '0');
+  final minute = local.minute.toString().padLeft(2, '0');
+  return '$day $month ${local.year}, $hour:$minute';
 }

@@ -30,4 +30,11 @@ class FuelSaleRepository {
       parser: (json) => QrPaymentResponse.fromJson(json as Map<String, dynamic>),
     );
   }
+
+  Future<ApiResult<FuelSaleResponse>> fetchTransactionStatus(String transactionId) {
+    return _apiClient.get<FuelSaleResponse>(
+      ApiEndpoints.merchantTransaction(transactionId),
+      parser: (json) => FuelSaleResponse.fromJson(json as Map<String, dynamic>),
+    );
+  }
 }

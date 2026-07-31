@@ -21,72 +21,44 @@ class FuelSalePage extends StatefulWidget {
 }
 
 class _FuelSalePageState extends State<FuelSalePage> {
-  final TextEditingController _nairaController = TextEditingController();
   final TextEditingController _litresController = TextEditingController();
   final TextEditingController _customerIdController = TextEditingController();
 
   double _fuelRate = 1250;
   String _currency = 'NGN';
-  bool _updatingFromNaira = false;
-  bool _updatingFromLitres = false;
   bool _isLoadingFuelPrice = true;
   bool _isGeneratingQr = false;
   bool _isProcessingIdPayment = false;
   bool _qrReady = false;
+  bool _awaitingCustomerConfirm = false;
   QrPaymentData? _qrPaymentData;
   Timer? _qrExpiryTimer;
+  Timer? _statusPollTimer;
   Duration _qrRemaining = Duration.zero;
   int _paymentTab = 0; // 0 = Show QR, 1 = Purchase ID
+
+  double get _calculatedAmount {
+    final litres = double.tryParse(_litresController.text.trim()) ?? 0;
+    if (litres <= 0) return 0;
+    return litres * _fuelRate;
+  }
 
   @override
   void initState() {
     super.initState();
-    _nairaController.addListener(_onNairaChanged);
-    _litresController.addListener(_onLitresChanged);
+    _litresController.addListener(() {
+      if (mounted) setState(() {});
+    });
     _loadFuelPrice();
   }
 
   @override
   void dispose() {
     _qrExpiryTimer?.cancel();
-    _nairaController
-      ..removeListener(_onNairaChanged)
-      ..dispose();
-    _litresController
-      ..removeListener(_onLitresChanged)
-      ..dispose();
+    _statusPollTimer?.cancel();
+    _litresController.dispose();
     _customerIdController.dispose();
     super.dispose();
-  }
-
-  void _onNairaChanged() {
-    if (_updatingFromLitres) {
-      return;
-    }
-
-    final value = double.tryParse(_nairaController.text);
-    _updatingFromNaira = true;
-    if (value == null) {
-      _litresController.text = '';
-    } else {
-      _litresController.text = (value / _fuelRate).toStringAsFixed(2);
-    }
-    _updatingFromNaira = false;
-  }
-
-  void _onLitresChanged() {
-    if (_updatingFromNaira) {
-      return;
-    }
-
-    final value = double.tryParse(_litresController.text);
-    _updatingFromLitres = true;
-    if (value == null) {
-      _nairaController.text = '';
-    } else {
-      _nairaController.text = (value * _fuelRate).toStringAsFixed(2);
-    }
-    _updatingFromLitres = false;
   }
 
   Future<void> _loadFuelPrice() async {
@@ -105,7 +77,6 @@ class _FuelSalePageState extends State<FuelSalePage> {
           _currency = success.data.data.currency;
           _isLoadingFuelPrice = false;
         });
-        _onNairaChanged();
       case ApiFailure<FuelPriceResponse> failure:
         setState(() => _isLoadingFuelPrice = false);
         ScaffoldMessenger.of(
@@ -115,16 +86,16 @@ class _FuelSalePageState extends State<FuelSalePage> {
   }
 
   Future<void> _generateQr() async {
-    final amount = double.tryParse(_nairaController.text) ?? 0;
-    if (amount <= 0) {
+    final fuelLitres = double.tryParse(_litresController.text) ?? 0;
+    if (fuelLitres <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter an amount before generating QR.')),
+        const SnackBar(content: Text('Enter litres before generating QR.')),
       );
       return;
     }
 
     setState(() => _isGeneratingQr = true);
-    final request = GenerateQrRequest(amount: amount);
+    final request = GenerateQrRequest(fuelLitres: fuelLitres);
     final result = await AppServices.instance.fuelSaleRepository.generateQr(
       request,
     );
@@ -137,8 +108,10 @@ class _FuelSalePageState extends State<FuelSalePage> {
           _isGeneratingQr = false;
           _qrReady = true;
           _qrPaymentData = success.data.data;
+          _awaitingCustomerConfirm = true;
         });
         _startQrTimer(success.data.data.expiresAt);
+        _startStatusPolling(success.data.data.transactionId);
       case ApiFailure<QrPaymentResponse> failure:
         setState(() => _isGeneratingQr = false);
         ScaffoldMessenger.of(
@@ -148,13 +121,63 @@ class _FuelSalePageState extends State<FuelSalePage> {
   }
 
   String _formattedAmount() {
-    final amount = double.tryParse(_nairaController.text) ?? 12500;
+    final amount = _qrPaymentData?.amount ?? _calculatedAmount;
     return '₦${amount.toStringAsFixed(0)}';
   }
 
   String _formattedLitres() {
-    final litres = double.tryParse(_litresController.text) ?? 19.2;
+    final litres = _qrPaymentData?.fuelLitres ??
+        (double.tryParse(_litresController.text) ?? 0);
     return '${litres.toStringAsFixed(1)}L';
+  }
+
+  void _stopStatusPolling() {
+    _statusPollTimer?.cancel();
+    _statusPollTimer = null;
+  }
+
+  void _startStatusPolling(String transactionId) {
+    _stopStatusPolling();
+    _statusPollTimer = Timer.periodic(const Duration(seconds: 2), (_) async {
+      final result = await AppServices.instance.fuelSaleRepository
+          .fetchTransactionStatus(transactionId);
+      if (!mounted) return;
+      switch (result) {
+        case ApiSuccess<FuelSaleResponse> success:
+          final status = success.data.status.toLowerCase();
+          if (status == 'completed') {
+            _stopStatusPolling();
+            setState(() {
+              _awaitingCustomerConfirm = false;
+              _qrReady = false;
+              _qrPaymentData = null;
+            });
+            _openPaymentAlert(
+              PaymentAlertStatus.success,
+              transactionId: success.data.transactionId,
+              message: 'Customer confirmed. Fuel purchase completed.',
+            );
+          } else if (status == 'declined' ||
+              status == 'failed' ||
+              status == 'expired') {
+            _stopStatusPolling();
+            setState(() {
+              _awaitingCustomerConfirm = false;
+              _qrReady = false;
+              _qrPaymentData = null;
+            });
+            _openPaymentAlert(
+              PaymentAlertStatus.failure,
+              transactionId: success.data.transactionId,
+              message: status == 'declined'
+                  ? 'Customer declined this fuel purchase.'
+                  : 'Sale $status. Generate a new request.',
+            );
+          }
+        case ApiFailure<FuelSaleResponse> _:
+          break;
+      }
+    });
   }
 
   bool get _isQrExpired {
@@ -220,7 +243,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
     }
 
     final purchaseId = _customerIdController.text.trim().replaceAll(RegExp(r'\D'), '');
-    final amount = double.tryParse(_nairaController.text.trim()) ?? 0;
+    final fuelLitres = double.tryParse(_litresController.text.trim()) ?? 0;
 
     if (purchaseId.length != 9) {
       _openPaymentAlert(
@@ -230,10 +253,10 @@ class _FuelSalePageState extends State<FuelSalePage> {
       return;
     }
 
-    if (amount <= 0) {
+    if (fuelLitres <= 0) {
       _openPaymentAlert(
         PaymentAlertStatus.failure,
-        message: 'Enter a valid purchase amount',
+        message: 'Enter a valid fuel volume in litres',
       );
       return;
     }
@@ -241,7 +264,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
     setState(() => _isProcessingIdPayment = true);
 
     final result = await AppServices.instance.fuelSaleRepository.createSale(
-      CreateFuelSaleRequest(purchaseId: purchaseId, amount: amount),
+      CreateFuelSaleRequest(purchaseId: purchaseId, fuelLitres: fuelLitres),
     );
 
     if (!mounted) {
@@ -252,11 +275,26 @@ class _FuelSalePageState extends State<FuelSalePage> {
 
     switch (result) {
       case ApiSuccess<FuelSaleResponse> success:
-        _openPaymentAlert(
-          PaymentAlertStatus.success,
-          transactionId: success.data.transactionId,
-          message: 'Fuel credit disbursed successfully',
-        );
+        if (success.data.isAwaitingConfirmation) {
+          setState(() {
+            _awaitingCustomerConfirm = true;
+          });
+          _startStatusPolling(success.data.transactionId);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Waiting for customer to confirm '
+                '${success.data.fuelLitres.toStringAsFixed(1)} L · ₦${success.data.amount.toStringAsFixed(0)}',
+              ),
+            ),
+          );
+        } else {
+          _openPaymentAlert(
+            PaymentAlertStatus.success,
+            transactionId: success.data.transactionId,
+            message: 'Fuel purchase completed successfully',
+          );
+        }
       case ApiFailure<FuelSaleResponse> failure:
         _openPaymentAlert(
           PaymentAlertStatus.failure,
@@ -322,7 +360,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Enter amount, then show QR or take the customer purchase ID.',
+                                'Enter litres only — sale amount is calculated from your station pump price.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 12,
@@ -386,65 +424,162 @@ class _FuelSalePageState extends State<FuelSalePage> {
   }
 
   Widget _stepOneCard(TextTheme textTheme) {
+    final litres = double.tryParse(_litresController.text.trim()) ?? 0;
+    final amount = _calculatedAmount;
+
     return GlassCard(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(24),
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                width: 32,
-                height: 32,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  shape: BoxShape.circle,
+                  color: AppColors.primary.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(999),
                 ),
-                alignment: Alignment.center,
-                child: const Text(
-                  '1',
-                  style: TextStyle(
+                child: Text(
+                  'STEP 1',
+                  style: textTheme.labelSmall?.copyWith(
                     color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
                   ),
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  'Volume & Value',
-                  style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-                ),
-              ),
+              const Spacer(),
               Text(
                 _isLoadingFuelPrice
-                    ? 'Loading rate...'
-                    : 'Rate: ${_currencySymbol(_currency)}${_fuelRate.toStringAsFixed(2)}/L',
-                style: textTheme.labelSmall?.copyWith(color: AppColors.slate500),
+                    ? 'Loading pump price…'
+                    : '${_currencySymbol(_currency)}${_fuelRate.toStringAsFixed(2)} / L',
+                style: textTheme.labelMedium?.copyWith(
+                  color: AppColors.slate500,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth > 580;
-              if (isWide) {
-                return Row(
-                  children: [
-                    Expanded(child: _amountField(textTheme)),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(child: _litresField(textTheme)),
-                  ],
-                );
-              }
-              return Column(
-                children: [
-                  _amountField(textTheme),
-                  const SizedBox(height: AppSpacing.md),
-                  _litresField(textTheme),
-                ],
-              );
-            },
+          Text(
+            'How many litres?',
+            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Customer buys in litres. Price is locked to your station rate.',
+            style: textTheme.bodySmall?.copyWith(color: AppColors.slate500),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.md,
+            ),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFECFDF5), Color(0xFFF8FAFC)],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.primary.withOpacity(0.18)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _litresController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    style: textTheme.displayMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primary,
+                    ),
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: '0.0',
+                      hintStyle: textTheme.displayMedium?.copyWith(
+                        color: AppColors.slate200,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    'LITRES',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.6,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: litres > 0 ? AppColors.primary : AppColors.slate100,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.payments_outlined,
+                  color: litres > 0 ? AppColors.accent : AppColors.slate400,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Sale total (auto)',
+                        style: textTheme.labelSmall?.copyWith(
+                          color: litres > 0
+                              ? AppColors.emeraldMuted
+                              : AppColors.slate500,
+                        ),
+                      ),
+                      Text(
+                        litres > 0
+                            ? '${_currencySymbol(_currency)}${amount.toStringAsFixed(0)}'
+                            : '—',
+                        style: textTheme.headlineSmall?.copyWith(
+                          color: litres > 0 ? Colors.white : AppColors.slate400,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (litres > 0)
+                  Text(
+                    '${litres.toStringAsFixed(1)} L × ${_fuelRate.toStringAsFixed(0)}',
+                    style: textTheme.labelSmall?.copyWith(
+                      color: AppColors.emeraldMuted,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ],
       ),
@@ -485,7 +620,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                       style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                     ),
                     Text(
-                      'Present this code to the customer to complete payment',
+                      'Customer scans, reviews litres & price, then accepts to dispense',
                       style: textTheme.labelSmall?.copyWith(color: AppColors.slate500),
                     ),
                   ],
@@ -699,41 +834,34 @@ class _FuelSalePageState extends State<FuelSalePage> {
                       ),
                     )
                   else
-                    Column(
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: FilledButton.icon(
-                            onPressed: () =>
-                                _openPaymentAlert(PaymentAlertStatus.success),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.secondaryContainer,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: AppSpacing.md,
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: const Color(0x22051A24),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.accent,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text(
+                              'Waiting for the customer to review litres & price, then accept or decline.',
+                              style: textTheme.labelSmall?.copyWith(
+                                color: Colors.white.withOpacity(0.9),
                               ),
                             ),
-                            icon: const Icon(Icons.check_circle_outline),
-                            label: const Text('Complete Payment'),
                           ),
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: () =>
-                                _openPaymentAlert(PaymentAlertStatus.failure),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: AppColors.danger),
-                              padding: const EdgeInsets.symmetric(
-                                vertical: AppSpacing.md,
-                              ),
-                              foregroundColor: AppColors.danger,
-                            ),
-                            icon: const Icon(Icons.error_outline_rounded),
-                            label: const Text('Decline Payment'),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                 ],
               ),
@@ -848,7 +976,10 @@ class _FuelSalePageState extends State<FuelSalePage> {
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              onPressed: _isProcessingIdPayment ? null : _processIdPayment,
+              onPressed: (_isProcessingIdPayment ||
+                      (_awaitingCustomerConfirm && _paymentTab == 1))
+                  ? null
+                  : _processIdPayment,
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.accent,
@@ -868,110 +999,17 @@ class _FuelSalePageState extends State<FuelSalePage> {
                     )
                   : const Icon(Icons.verified_user_rounded),
               label: Text(
-                _isProcessingIdPayment ? 'Processing...' : 'Authorize Fuel Purchase',
+                _isProcessingIdPayment
+                    ? 'Sending…'
+                    : _awaitingCustomerConfirm && _paymentTab == 1
+                        ? 'Waiting for customer…'
+                        : 'Send for customer confirmation',
                 style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
               ),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _amountField(TextTheme textTheme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: AppSpacing.xs),
-          child: Text('Amount (NGN)', style: textTheme.labelSmall),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            color: AppColors.slate50,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.slate200),
-          ),
-          child: Row(
-            children: [
-              Text(
-                '₦',
-                style: textTheme.headlineSmall?.copyWith(
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: TextField(
-                  controller: _nairaController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  style: textTheme.displayLarge,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: '0.00',
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _litresField(TextTheme textTheme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: AppSpacing.xs),
-          child: Text('Volume (Litres)', style: textTheme.labelSmall),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            color: AppColors.slate50,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.slate200),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _litresController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  style: textTheme.displayLarge,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: '0.00',
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                'L',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 

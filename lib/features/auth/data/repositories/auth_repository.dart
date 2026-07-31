@@ -22,6 +22,9 @@ class AuthRepository {
         await _tokenStorage.saveSession(
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
+          displayName: data.user.fullName,
+          role: data.user.role,
+          email: data.user.email,
         );
       }
     }

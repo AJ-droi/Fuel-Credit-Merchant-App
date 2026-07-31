@@ -60,19 +60,36 @@ class _AccountPageState extends State<AccountPage> {
                       final failure =
                           data.profileResult as ApiFailure<ProfileResponse>;
                       return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(failure.error.message),
-                            TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  _accountFuture = _loadAccountData();
-                                });
-                              },
-                              child: const Text('Retry'),
-                            ),
-                          ],
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                failure.error.message,
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _accountFuture = _loadAccountData();
+                                  });
+                                },
+                                child: const Text('Retry'),
+                              ),
+                              const SizedBox(height: AppSpacing.md),
+                              OutlinedButton.icon(
+                                onPressed: () => _confirmLogout(context),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: AppColors.danger),
+                                  foregroundColor: AppColors.danger,
+                                ),
+                                icon: const Icon(Icons.logout),
+                                label: const Text('Log out'),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
@@ -222,9 +239,7 @@ class _AccountPageState extends State<AccountPage> {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () => Navigator.of(
-                context,
-              ).pushNamedAndRemoveUntil(AppRouter.login, (route) => false),
+              onPressed: () => _confirmLogout(context),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: AppColors.danger),
                 backgroundColor: AppColors.danger.withOpacity(0.08),
@@ -235,7 +250,7 @@ class _AccountPageState extends State<AccountPage> {
               ),
               icon: const Icon(Icons.logout, color: AppColors.danger),
               label: Text(
-                'Logout Session',
+                'Log out',
                 style: textTheme.bodyLarge?.copyWith(
                   color: AppColors.danger,
                   fontWeight: FontWeight.w700,
@@ -512,6 +527,52 @@ class _AccountPageState extends State<AccountPage> {
           },
         );
       },
+    );
+  }
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          title: const Text(
+            'Log out?',
+            style: TextStyle(color: AppColors.onBackground),
+          ),
+          content: const Text(
+            'You will need to sign in again to manage this station.',
+            style: TextStyle(color: AppColors.muted),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.muted),
+              ),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Log out'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true && context.mounted) {
+      await _logout(context);
+    }
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    await AppServices.instance.authRepository.logout();
+    if (!context.mounted) return;
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      AppRouter.login,
+      (route) => false,
     );
   }
 }

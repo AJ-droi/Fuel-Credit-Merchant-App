@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../../../app/router/app_router.dart';
 import '../../../../core/network/api_result.dart';
 import '../../../../core/network/app_services.dart';
+import '../../../../core/storage/token_storage.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../account/data/models/profile_model.dart';
 import '../../data/models/dashboard_models.dart';
 
 class DashboardTopBar extends StatefulWidget {
@@ -14,12 +17,46 @@ class DashboardTopBar extends StatefulWidget {
 }
 
 class _DashboardTopBarState extends State<DashboardTopBar> {
-  late Future<ApiResult<DashboardSummary>> _summaryFuture;
+  late Future<_TopBarData> _dataFuture;
 
   @override
   void initState() {
     super.initState();
-    _summaryFuture = AppServices.instance.dashboardRepository.fetchSummary();
+    _dataFuture = _load();
+  }
+
+  Future<_TopBarData> _load() async {
+    final storage = TokenStorage.instance;
+    var name = await storage.getUserDisplayName();
+    final role = await storage.getUserRole();
+    final email = await storage.getUserEmail();
+    final summaryResult =
+        await AppServices.instance.dashboardRepository.fetchSummary();
+
+    var businessName = '';
+    if (summaryResult is ApiSuccess<DashboardSummary>) {
+      businessName = summaryResult.data.data.businessName;
+    }
+
+    if (name == null || name.isEmpty) {
+      final profileResult =
+          await AppServices.instance.accountRepository.fetchProfile();
+      if (profileResult is ApiSuccess<ProfileResponse>) {
+        final profile = profileResult.data.data;
+        if (profile.merchantName.isNotEmpty) {
+          name = profile.merchantName;
+        } else if (profile.businessName.isNotEmpty) {
+          name = profile.businessName;
+        }
+      }
+    }
+
+    return _TopBarData(
+      userName: (name != null && name.isNotEmpty) ? name : 'Merchant',
+      role: role ?? '',
+      email: email ?? '',
+      businessName: businessName,
+    );
   }
 
   @override
@@ -31,19 +68,17 @@ class _DashboardTopBarState extends State<DashboardTopBar> {
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(AppSpacing.md, 10, AppSpacing.sm, 16),
-          child: FutureBuilder<ApiResult<DashboardSummary>>(
-            future: _summaryFuture,
+          child: FutureBuilder<_TopBarData>(
+            future: _dataFuture,
             builder: (context, snapshot) {
-              var businessName = 'Merchant';
-              var merchantId = '';
-
-              final result = snapshot.data;
-              if (result is ApiSuccess<DashboardSummary>) {
-                businessName = result.data.data.businessName;
-                merchantId = result.data.data.merchantId;
-              }
-
-              final title = businessName.isNotEmpty ? businessName : 'FUELCREDIT Merchant';
+              final data = snapshot.data;
+              final userName = data?.userName ?? 'Merchant';
+              final subtitle = () {
+                if (data == null) return '';
+                if (data.businessName.isNotEmpty) return data.businessName;
+                if (data.role.isNotEmpty) return data.role;
+                return data.email;
+              }();
 
               return Row(
                 children: [
@@ -55,7 +90,11 @@ class _DashboardTopBarState extends State<DashboardTopBar> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.white.withOpacity(0.15)),
                     ),
-                    child: const Icon(Icons.local_gas_station_rounded, color: AppColors.accent, size: 22),
+                    child: const Icon(
+                      Icons.person_rounded,
+                      color: AppColors.accent,
+                      size: 22,
+                    ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
@@ -71,7 +110,7 @@ class _DashboardTopBarState extends State<DashboardTopBar> {
                           ),
                         ),
                         Text(
-                          title,
+                          userName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -81,9 +120,9 @@ class _DashboardTopBarState extends State<DashboardTopBar> {
                             letterSpacing: -0.3,
                           ),
                         ),
-                        if (merchantId.isNotEmpty)
+                        if (subtitle.isNotEmpty)
                           Text(
-                            merchantId,
+                            subtitle,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -95,8 +134,12 @@ class _DashboardTopBarState extends State<DashboardTopBar> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.notifications_outlined, color: AppColors.accent),
+                    tooltip: 'Log out',
+                    onPressed: () => _confirmLogout(context),
+                    icon: const Icon(
+                      Icons.logout_rounded,
+                      color: AppColors.accent,
+                    ),
                   ),
                 ],
               );
@@ -106,4 +149,60 @@ class _DashboardTopBarState extends State<DashboardTopBar> {
       ),
     );
   }
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          title: const Text(
+            'Log out?',
+            style: TextStyle(color: AppColors.onBackground),
+          ),
+          content: const Text(
+            'You will need to sign in again to manage this station.',
+            style: TextStyle(color: AppColors.muted),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.muted),
+              ),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Log out'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    await AppServices.instance.authRepository.logout();
+    if (!context.mounted) return;
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      AppRouter.login,
+      (route) => false,
+    );
+  }
+}
+
+class _TopBarData {
+  const _TopBarData({
+    required this.userName,
+    required this.role,
+    required this.email,
+    required this.businessName,
+  });
+
+  final String userName;
+  final String role;
+  final String email;
+  final String businessName;
 }

@@ -107,6 +107,17 @@ class ApiClient {
       ),
     );
 
+    // Dio treats paths starting with `/` as host-absolute and drops `/api/v1`.
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          if (options.path.startsWith('/')) {
+            options.path = options.path.substring(1);
+          }
+          handler.next(options);
+        },
+      ),
+    );
     dio.interceptors.addAll(interceptors);
     return dio;
   }
