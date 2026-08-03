@@ -7,6 +7,7 @@ import '../../features/fuel_sale/data/repositories/fuel_sale_repository.dart';
 import '../../features/management/data/repositories/management_repository.dart';
 import '../../features/notifications/data/repositories/notifications_repository.dart';
 import '../../features/settlement/data/repositories/settlement_repository.dart';
+import '../../features/support/data/repositories/support_repository.dart';
 import '../../features/transactions/data/repositories/transactions_repository.dart';
 import '../storage/token_storage.dart';
 import 'api_client.dart';
@@ -23,6 +24,7 @@ class AppServices {
     required this.transactionsRepository,
     required this.accountRepository,
     required this.notificationsRepository,
+    required this.supportRepository,
   });
 
   final ApiClient apiClient;
@@ -34,6 +36,7 @@ class AppServices {
   final TransactionsRepository transactionsRepository;
   final AccountRepository accountRepository;
   final NotificationsRepository notificationsRepository;
+  final SupportRepository supportRepository;
 
   static AppServices? _instance;
 
@@ -56,6 +59,7 @@ class AppServices {
       transactionsRepository: TransactionsRepository(apiClient),
       accountRepository: AccountRepository(apiClient),
       notificationsRepository: NotificationsRepository(apiClient),
+      supportRepository: SupportRepository(apiClient),
     );
   }
 }

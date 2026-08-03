@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../app/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/models/notification_models.dart';
 import '../controllers/notification_controller.dart';
@@ -212,9 +213,34 @@ class _NotificationCenterPageState extends State<NotificationCenterPage> {
     );
   }
 
+  String? _supportTicketId(AppNotificationModel item) {
+    final raw = item.data['ticketId'];
+    if (raw is String && raw.isNotEmpty) return raw;
+    return null;
+  }
+
+  Future<void> _openSupportChat(String ticketId) async {
+    if (!mounted) return;
+    await Navigator.of(context).pushNamed(
+      AppRouter.supportTicketDetail,
+      arguments: {
+        'controller': AppRouter.supportController,
+        'ticketId': ticketId,
+      },
+    );
+  }
+
   Future<void> _openDetail(AppNotificationModel item) async {
     await _ctrl.openNotification(item);
     if (!mounted) return;
+
+    final ticketId = _supportTicketId(item);
+    if (ticketId != null &&
+        (item.category == 'support' || item.data['source'] == 'support')) {
+      await _openSupportChat(ticketId);
+      return;
+    }
+
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -263,6 +289,28 @@ class _NotificationCenterPageState extends State<NotificationCenterPage> {
                   detail.body,
                   style: const TextStyle(fontSize: 15, height: 1.45, color: AppColors.onBackground),
                 ),
+                if (ticketId != null) ...[
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      _openSupportChat(ticketId);
+                    },
+                    icon: const Icon(Icons.chat_outlined),
+                    label: const Text('Open chat & reply'),
+                  ),
+                ],
+                if (detail.category == 'support') ...[
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pushNamed(AppRouter.helpCenter);
+                    },
+                    icon: const Icon(Icons.support_agent_outlined),
+                    label: const Text('Open Help & Support'),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 ...detail.media.map((m) {
                   if (m.type == 'image') {

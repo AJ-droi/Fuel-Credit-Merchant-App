@@ -32,11 +32,15 @@ class _FuelSalePageState extends State<FuelSalePage> {
   bool _qrReady = false;
   bool _awaitingCustomerConfirm = false;
   QrPaymentData? _qrPaymentData;
+  String? _activeTransactionId;
+  bool _isCancelling = false;
   Timer? _qrExpiryTimer;
   Timer? _statusPollTimer;
   Duration _qrRemaining = Duration.zero;
   int _paymentTab = 0; // 0 = Show QR, 1 = Purchase ID
 
+  String? get _pendingTransactionId =>
+      _activeTransactionId ?? _qrPaymentData?.transactionId;
   double get _calculatedAmount {
     final litres = double.tryParse(_litresController.text.trim()) ?? 0;
     if (litres <= 0) return 0;
@@ -94,6 +98,12 @@ class _FuelSalePageState extends State<FuelSalePage> {
       return;
     }
 
+    // Clear any open pending sale (e.g. expired QR still open) before a new one.
+    if (_pendingTransactionId != null && _pendingTransactionId!.isNotEmpty) {
+      await _cancelActiveSale(startNew: false);
+      if (!mounted) return;
+    }
+
     setState(() => _isGeneratingQr = true);
     final request = GenerateQrRequest(fuelLitres: fuelLitres);
     final result = await AppServices.instance.fuelSaleRepository.generateQr(
@@ -108,6 +118,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
           _isGeneratingQr = false;
           _qrReady = true;
           _qrPaymentData = success.data.data;
+          _activeTransactionId = success.data.data.transactionId;
           _awaitingCustomerConfirm = true;
         });
         _startQrTimer(success.data.data.expiresAt);
@@ -151,6 +162,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
               _awaitingCustomerConfirm = false;
               _qrReady = false;
               _qrPaymentData = null;
+              _activeTransactionId = null;
             });
             _openPaymentAlert(
               PaymentAlertStatus.success,
@@ -159,19 +171,23 @@ class _FuelSalePageState extends State<FuelSalePage> {
             );
           } else if (status == 'declined' ||
               status == 'failed' ||
-              status == 'expired') {
+              status == 'expired' ||
+              status == 'cancelled') {
             _stopStatusPolling();
             setState(() {
               _awaitingCustomerConfirm = false;
               _qrReady = false;
               _qrPaymentData = null;
+              _activeTransactionId = null;
             });
             _openPaymentAlert(
               PaymentAlertStatus.failure,
               transactionId: success.data.transactionId,
               message: status == 'declined'
                   ? 'Customer declined this fuel purchase.'
-                  : 'Sale $status. Generate a new request.',
+                  : status == 'cancelled'
+                      ? 'Sale was cancelled. You can start a new one.'
+                      : 'Sale $status. Generate a new request.',
             );
           }
         case ApiFailure<FuelSaleResponse> _:
@@ -277,6 +293,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
       case ApiSuccess<FuelSaleResponse> success:
         if (success.data.isAwaitingConfirmation) {
           setState(() {
+            _activeTransactionId = success.data.transactionId;
             _awaitingCustomerConfirm = true;
           });
           _startStatusPolling(success.data.transactionId);
@@ -300,6 +317,84 @@ class _FuelSalePageState extends State<FuelSalePage> {
           PaymentAlertStatus.failure,
           message: failure.error.message,
         );
+    }
+  }
+
+  Future<void> _cancelActiveSale({bool startNew = true}) async {
+    final transactionId = _pendingTransactionId;
+    if (transactionId == null || transactionId.isEmpty || _isCancelling) {
+      return;
+    }
+
+    setState(() => _isCancelling = true);
+    final result = await AppServices.instance.fuelSaleRepository.cancelSale(
+      transactionId,
+      reason: 'Cancelled by merchant — start a new sale',
+    );
+
+    if (!mounted) return;
+
+    setState(() => _isCancelling = false);
+
+    switch (result) {
+      case ApiSuccess<FuelSaleResponse> _:
+        _stopStatusPolling();
+        _qrExpiryTimer?.cancel();
+        setState(() {
+          _awaitingCustomerConfirm = false;
+          _qrReady = false;
+          _qrPaymentData = null;
+          _activeTransactionId = null;
+          _qrRemaining = Duration.zero;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              startNew
+                  ? 'Sale cancelled. Enter litres and start a new purchase.'
+                  : 'Sale cancelled.',
+            ),
+          ),
+        );
+      case ApiFailure<FuelSaleResponse> failure:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(failure.error.message)),
+        );
+    }
+  }
+
+  Future<void> _confirmCancelAndStartNew() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          title: const Text(
+            'Cancel this sale?',
+            style: TextStyle(color: AppColors.onBackground),
+          ),
+          content: const Text(
+            'Use this when the customer cannot complete (for example unpaid balance) '
+            'so you can start a fresh QR or purchase-ID sale.',
+            style: TextStyle(color: AppColors.muted),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Keep waiting', style: TextStyle(color: AppColors.muted)),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Cancel sale'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true && mounted) {
+      await _cancelActiveSale();
     }
   }
 
@@ -811,7 +906,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
                       width: double.infinity,
                       height: 56,
                       child: FilledButton.icon(
-                        onPressed: _generateQr,
+                        onPressed: _isCancelling ? null : _generateQr,
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: AppColors.onPrimary,
@@ -863,6 +958,37 @@ class _FuelSalePageState extends State<FuelSalePage> {
                         ],
                       ),
                     ),
+                  if (_pendingTransactionId != null) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: OutlinedButton.icon(
+                        onPressed: _isCancelling ? null : _confirmCancelAndStartNew,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.danger,
+                          side: const BorderSide(color: AppColors.danger),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: _isCancelling
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.danger,
+                                ),
+                              )
+                            : const Icon(Icons.cancel_outlined, size: 20),
+                        label: Text(
+                          _isCancelling ? 'Cancelling…' : 'Cancel & start new sale',
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -1008,6 +1134,39 @@ class _FuelSalePageState extends State<FuelSalePage> {
               ),
             ),
           ),
+          if (_awaitingCustomerConfirm &&
+              _paymentTab == 1 &&
+              _pendingTransactionId != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _isCancelling ? null : _confirmCancelAndStartNew,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.danger,
+                  side: const BorderSide(color: AppColors.danger),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: _isCancelling
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.danger,
+                        ),
+                      )
+                    : const Icon(Icons.cancel_outlined, size: 20),
+                label: Text(
+                  _isCancelling ? 'Cancelling…' : 'Cancel & start new sale',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

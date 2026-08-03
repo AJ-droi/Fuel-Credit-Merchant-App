@@ -227,11 +227,12 @@ class _AccountPageState extends State<AccountPage> {
           const _SectionTitle(title: 'Support', color: AppColors.muted),
           const SizedBox(height: AppSpacing.sm),
           _ActionList(
-            items: const [
+            items: [
               _ActionItem(
                 'Help & Support',
                 Icons.help_center_rounded,
                 AppColors.muted,
+                onTap: () => Navigator.of(context).pushNamed(AppRouter.helpCenter),
               ),
             ],
           ),

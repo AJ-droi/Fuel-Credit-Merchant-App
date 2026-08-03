@@ -19,6 +19,8 @@ final class ApiEndpoints {
   static const String fuelSaleGenerateQr = 'merchant/disbursements/qr';
   static String merchantTransaction(String transactionId) =>
       'merchant/transactions/$transactionId';
+  static String merchantTransactionCancel(String transactionId) =>
+      'merchant/transactions/$transactionId/cancel';
 
   static const String merchantProfile = 'merchant/profile';
   static const String merchantAccount = 'merchant/account';
@@ -40,4 +42,11 @@ final class ApiEndpoints {
   static const String notificationsUnreadCount = 'notifications/unread-count';
   static const String notificationsReadAll = 'notifications/read-all';
   static String notificationRead(String id) => 'notifications/$id/read';
+
+  static const String supportTopics = 'support/topics';
+  static const String supportContact = 'support/contact';
+  static const String supportTickets = 'support/tickets';
+  static String supportTicket(String ticketId) => 'support/tickets/$ticketId';
+  static String supportTicketMessages(String ticketId) =>
+      'support/tickets/$ticketId/messages';
 }

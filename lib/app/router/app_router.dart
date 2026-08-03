@@ -16,6 +16,11 @@ import '../../features/management/presentation/pages/edit_branch_page.dart';
 import '../../features/management/presentation/pages/staff_detail_page.dart';
 import '../../features/notifications/presentation/controllers/notification_controller.dart';
 import '../../features/notifications/presentation/pages/notification_center_page.dart';
+import '../../features/support/presentation/controllers/support_controller.dart';
+import '../../features/support/presentation/pages/help_center_page.dart';
+import '../../features/support/presentation/pages/new_support_ticket_page.dart';
+import '../../features/support/presentation/pages/support_ticket_detail_page.dart';
+import '../../core/network/app_services.dart';
 
 final class AppRouter {
   const AppRouter._();
@@ -35,8 +40,15 @@ final class AppRouter {
   static const String editBranch = '/management/branch/edit';
   static const String staffDetail = '/management/staff';
   static const String notifications = '/notifications';
+  static const String helpCenter = '/help-center';
+  static const String newSupportTicket = '/new-support-ticket';
+  static const String supportTicketDetail = '/support-ticket-detail';
 
   static final NotificationController notificationController = NotificationController();
+
+  static final SupportController supportController = SupportController(
+    AppServices.instance.supportRepository,
+  );
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     final routeName = settings.name ?? '';
@@ -153,6 +165,32 @@ final class AppRouter {
       case notifications:
         return MaterialPageRoute<void>(
           builder: (_) => NotificationCenterPage(controller: notificationController),
+          settings: settings,
+        );
+      case helpCenter:
+        return MaterialPageRoute<void>(
+          builder: (_) => HelpCenterPage(controller: supportController),
+          settings: settings,
+        );
+      case newSupportTicket:
+        final contactCtrl = settings.arguments is SupportController
+            ? settings.arguments as SupportController
+            : supportController;
+        return MaterialPageRoute<void>(
+          builder: (_) => NewSupportTicketPage(controller: contactCtrl),
+          settings: settings,
+        );
+      case supportTicketDetail:
+        final args = settings.arguments as Map? ?? {};
+        final contactCtrl = args['controller'] is SupportController
+            ? args['controller'] as SupportController
+            : supportController;
+        final ticketId = (args['ticketId'] ?? '').toString();
+        return MaterialPageRoute<void>(
+          builder: (_) => SupportTicketDetailPage(
+            controller: contactCtrl,
+            ticketId: ticketId,
+          ),
           settings: settings,
         );
       default:

@@ -37,4 +37,14 @@ class FuelSaleRepository {
       parser: (json) => FuelSaleResponse.fromJson(json as Map<String, dynamic>),
     );
   }
+
+  Future<ApiResult<FuelSaleResponse>> cancelSale(String transactionId, {String? reason}) {
+    return _apiClient.post<FuelSaleResponse>(
+      ApiEndpoints.merchantTransactionCancel(transactionId),
+      data: reason != null && reason.trim().isNotEmpty
+          ? <String, dynamic>{'reason': reason.trim()}
+          : <String, dynamic>{},
+      parser: (json) => FuelSaleResponse.fromJson(json as Map<String, dynamic>),
+    );
+  }
 }
