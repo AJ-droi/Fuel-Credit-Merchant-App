@@ -14,6 +14,8 @@ import '../../features/management/presentation/pages/create_branch_page.dart';
 import '../../features/management/presentation/pages/branch_detail_page.dart';
 import '../../features/management/presentation/pages/edit_branch_page.dart';
 import '../../features/management/presentation/pages/staff_detail_page.dart';
+import '../../features/notifications/presentation/controllers/notification_controller.dart';
+import '../../features/notifications/presentation/pages/notification_center_page.dart';
 
 final class AppRouter {
   const AppRouter._();
@@ -32,6 +34,9 @@ final class AppRouter {
   static const String branchDetail = '/management/branch';
   static const String editBranch = '/management/branch/edit';
   static const String staffDetail = '/management/staff';
+  static const String notifications = '/notifications';
+
+  static final NotificationController notificationController = NotificationController();
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     final routeName = settings.name ?? '';
@@ -143,6 +148,11 @@ final class AppRouter {
         }
         return MaterialPageRoute<bool>(
           builder: (_) => StaffDetailPage(sellerId: sellerId),
+          settings: settings,
+        );
+      case notifications:
+        return MaterialPageRoute<void>(
+          builder: (_) => NotificationCenterPage(controller: notificationController),
           settings: settings,
         );
       default:

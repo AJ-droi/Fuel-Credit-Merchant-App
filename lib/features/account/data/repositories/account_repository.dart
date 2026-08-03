@@ -111,4 +111,31 @@ class AccountRepository {
           (json as Map<String, dynamic>)['success'] as bool? ?? true,
     );
   }
+
+  Future<ApiResult<bool>> deleteAccount() async {
+    return _apiClient.delete<bool>(
+      ApiEndpoints.merchantAccount,
+      parser: (json) =>
+          (json as Map<String, dynamic>)['success'] as bool? ?? true,
+    );
+  }
+
+  Future<ApiResult<bool>> reportCustomer({
+    required String customerUserId,
+    required String reason,
+    required String details,
+    String? transactionId,
+  }) {
+    return _apiClient.post<bool>(
+      ApiEndpoints.reportCustomer(customerUserId),
+      data: <String, dynamic>{
+        'reason': reason,
+        'details': details,
+        if (transactionId != null && transactionId.isNotEmpty)
+          'transactionId': transactionId,
+      },
+      parser: (json) =>
+          (json as Map<String, dynamic>)['success'] as bool? ?? true,
+    );
+  }
 }

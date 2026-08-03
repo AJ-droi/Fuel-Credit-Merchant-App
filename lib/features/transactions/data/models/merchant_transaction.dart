@@ -9,6 +9,8 @@ class MerchantTransaction {
     required this.createdAt,
     required this.businessName,
     required this.stationCode,
+    this.userId,
+    this.customerName,
   });
 
   final String id;
@@ -20,6 +22,8 @@ class MerchantTransaction {
   final DateTime? createdAt;
   final String businessName;
   final String stationCode;
+  final String? userId;
+  final String? customerName;
 
   bool get isSuccessful => status.toLowerCase() == 'completed';
   bool get isPending => status.toLowerCase() == 'pending';
@@ -36,6 +40,12 @@ class MerchantTransaction {
     final merchantSnapshot = json['merchantSnapshot'];
     final snapshotMap =
         merchantSnapshot is Map<String, dynamic> ? merchantSnapshot : <String, dynamic>{};
+    final customerSnapshot = json['customerSnapshot'];
+    final customerMap =
+        customerSnapshot is Map<String, dynamic> ? customerSnapshot : <String, dynamic>{};
+    final first = (customerMap['firstName'] ?? '').toString().trim();
+    final last = (customerMap['lastName'] ?? '').toString().trim();
+    final customerName = '$first $last'.trim();
 
     return MerchantTransaction(
       id: (json['id'] ?? json['_id'] ?? '').toString(),
@@ -47,6 +57,8 @@ class MerchantTransaction {
       createdAt: DateTime.tryParse((json['createdAt'] ?? '').toString()),
       businessName: (snapshotMap['businessName'] ?? '').toString(),
       stationCode: (snapshotMap['stationCode'] ?? '').toString(),
+      userId: json['userId']?.toString(),
+      customerName: customerName.isEmpty ? null : customerName,
     );
   }
 

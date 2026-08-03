@@ -258,6 +258,17 @@ class _AccountPageState extends State<AccountPage> {
               ),
             ),
           ),
+          const SizedBox(height: AppSpacing.sm),
+          TextButton(
+            onPressed: () => _confirmDeleteAccount(context),
+            child: Text(
+              'Delete account',
+              style: textTheme.bodyMedium?.copyWith(
+                color: AppColors.danger,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
           const SizedBox(height: AppSpacing.md),
           Text(
             'FuelNode v2.4.1 Build 99',
@@ -565,6 +576,55 @@ class _AccountPageState extends State<AccountPage> {
     if (confirmed == true && context.mounted) {
       await _logout(context);
     }
+  }
+
+  Future<void> _confirmDeleteAccount(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          title: const Text(
+            'Delete account?',
+            style: TextStyle(color: AppColors.onBackground),
+          ),
+          content: const Text(
+            'This deactivates your merchant login and signs you out. '
+            'Station admins also suspend the station. Sales and settlement '
+            'records may be retained for compliance.',
+            style: TextStyle(color: AppColors.muted),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.muted),
+              ),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Delete account'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    final result = await AppServices.instance.accountRepository.deleteAccount();
+    if (!context.mounted) return;
+
+    if (result case ApiFailure(:final error)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+      return;
+    }
+
+    await _logout(context);
   }
 
   Future<void> _logout(BuildContext context) async {

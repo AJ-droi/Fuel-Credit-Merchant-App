@@ -23,6 +23,9 @@ class _DashboardTopBarState extends State<DashboardTopBar> {
   void initState() {
     super.initState();
     _dataFuture = _load();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppRouter.notificationController.bootstrap();
+    });
   }
 
   Future<_TopBarData> _load() async {
@@ -132,6 +135,31 @@ class _DashboardTopBarState extends State<DashboardTopBar> {
                           ),
                       ],
                     ),
+                  ),
+                  ListenableBuilder(
+                    listenable: AppRouter.notificationController,
+                    builder: (context, _) {
+                      final unread = AppRouter.notificationController.unreadCount;
+                      return IconButton(
+                        tooltip: 'Notifications',
+                        onPressed: () {
+                          Navigator.of(context).pushNamed(AppRouter.notifications);
+                        },
+                        icon: Badge(
+                          isLabelVisible: unread > 0,
+                          label: Text(
+                            unread > 99 ? '99+' : '$unread',
+                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
+                          ),
+                          backgroundColor: AppColors.accent,
+                          textColor: AppColors.primary,
+                          child: const Icon(
+                            Icons.notifications_outlined,
+                            color: AppColors.accent,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   IconButton(
                     tooltip: 'Log out',

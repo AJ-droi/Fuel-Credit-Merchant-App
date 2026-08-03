@@ -21,14 +21,23 @@ final class ApiEndpoints {
       'merchant/transactions/$transactionId';
 
   static const String merchantProfile = 'merchant/profile';
+  static const String merchantAccount = 'merchant/account';
   static const String merchantTransactions = 'merchant/transactions';
   static const String merchantBranches = 'merchant/branches';
   static const String merchantSellers = 'merchant/sellers';
   static const String merchantInviteSeller = 'merchant/sellers/invite';
   static const String merchantSales = 'merchant/sales';
+  static const String reportReasons = 'reports/reasons';
 
   static String merchantBranch(String branchId) => 'merchant/branches/$branchId';
   static String merchantSeller(String sellerId) => 'merchant/sellers/$sellerId';
   static String merchantSellerSales(String sellerId) =>
       'merchant/sellers/$sellerId/sales';
+  static String reportCustomer(String customerUserId) =>
+      'reports/customers/$customerUserId';
+
+  static const String notifications = 'notifications';
+  static const String notificationsUnreadCount = 'notifications/unread-count';
+  static const String notificationsReadAll = 'notifications/read-all';
+  static String notificationRead(String id) => 'notifications/$id/read';
 }

@@ -284,7 +284,13 @@ class _TransactionsPageState extends State<TransactionsPage> {
               child: const Text('Load more'),
             );
           }
-          return _TransactionListTile(item: _items[index]);
+          return _TransactionListTile(
+            item: _items[index],
+            onReportCustomer: _items[index].userId == null ||
+                    _items[index].userId!.isEmpty
+                ? null
+                : () => _reportCustomer(_items[index]),
+          );
         },
       ),
     );
@@ -315,12 +321,153 @@ class _TransactionsPageState extends State<TransactionsPage> {
         return 'Failed';
     }
   }
+
+  Future<void> _reportCustomer(MerchantTransaction item) async {
+    final customerUserId = item.userId;
+    if (customerUserId == null || customerUserId.isEmpty) return;
+
+    const reasons = <String, String>{
+      'fraud': 'Fraud / scam',
+      'harassment': 'Harassment',
+      'inappropriate_behavior': 'Inappropriate behavior',
+      'safety_concern': 'Safety concern',
+      'other': 'Other',
+    };
+
+    var selectedReason = 'other';
+    final detailsCtrl = TextEditingController();
+    var submitting = false;
+
+    final submitted = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            return AlertDialog(
+              backgroundColor: AppColors.surface,
+              title: const Text(
+                'Report customer',
+                style: TextStyle(color: AppColors.onBackground),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (item.customerName != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            item.customerName!,
+                            style: const TextStyle(
+                              color: AppColors.muted,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    DropdownButtonFormField<String>(
+                      value: selectedReason,
+                      items: reasons.entries
+                          .map(
+                            (e) => DropdownMenuItem(
+                              value: e.key,
+                              child: Text(e.value),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: submitting
+                          ? null
+                          : (value) {
+                              if (value == null) return;
+                              setDialogState(() => selectedReason = value);
+                            },
+                      decoration: const InputDecoration(labelText: 'Reason'),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: detailsCtrl,
+                      maxLines: 4,
+                      enabled: !submitting,
+                      decoration: const InputDecoration(
+                        labelText: 'Details',
+                        hintText: 'Describe what happened (min 10 characters)',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed:
+                      submitting ? null : () => Navigator.of(ctx).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: submitting
+                      ? null
+                      : () async {
+                          final details = detailsCtrl.text.trim();
+                          if (details.length < 10) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please add a bit more detail.'),
+                              ),
+                            );
+                            return;
+                          }
+                          setDialogState(() => submitting = true);
+                          final result = await AppServices
+                              .instance.accountRepository
+                              .reportCustomer(
+                            customerUserId: customerUserId,
+                            reason: selectedReason,
+                            details: details,
+                            transactionId: item.id,
+                          );
+                          if (!ctx.mounted) return;
+                          if (result case ApiFailure(:final error)) {
+                            setDialogState(() => submitting = false);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(error.message)),
+                            );
+                            return;
+                          }
+                          Navigator.of(ctx).pop(true);
+                        },
+                  child: submitting
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Submit'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    detailsCtrl.dispose();
+    if (submitted == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Report submitted. Our team will review it.')),
+      );
+    }
+  }
 }
 
 class _TransactionListTile extends StatelessWidget {
-  const _TransactionListTile({required this.item});
+  const _TransactionListTile({
+    required this.item,
+    this.onReportCustomer,
+  });
 
   final MerchantTransaction item;
+  final VoidCallback? onReportCustomer;
 
   @override
   Widget build(BuildContext context) {
@@ -417,6 +564,23 @@ class _TransactionListTile extends StatelessWidget {
             value: _fullDateLabel(item.createdAt),
             fullWidth: true,
           ),
+          if (onReportCustomer != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: onReportCustomer,
+                icon: const Icon(Icons.flag_outlined, size: 18, color: AppColors.danger),
+                label: const Text(
+                  'Report customer',
+                  style: TextStyle(
+                    color: AppColors.danger,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

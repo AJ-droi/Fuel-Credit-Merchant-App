@@ -139,7 +139,22 @@ class _LoginFormCardState extends State<LoginFormCard> {
                   ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.md),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(
+                      AppRouter.forgotPassword,
+                      arguments: _emailController.text.trim(),
+                    );
+                  },
+                  child: Text(
+                    'Forgot password?',
+                    style: textTheme.labelSmall?.copyWith(color: AppColors.primaryContainer),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
               Row(
                 children: [
                   Switch(
@@ -154,19 +169,6 @@ class _LoginFormCardState extends State<LoginFormCard> {
                   Text(
                     'Remember me',
                     style: textTheme.labelSmall?.copyWith(color: AppColors.onBackground),
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pushNamed(
-                        AppRouter.forgotPassword,
-                        arguments: _emailController.text.trim(),
-                      );
-                    },
-                    child: Text(
-                      'Forgot password?',
-                      style: textTheme.labelSmall?.copyWith(color: AppColors.primaryContainer),
-                    ),
                   ),
                 ],
               ),
