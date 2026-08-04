@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../features/account/presentation/pages/account_page.dart';
+import '../../features/auth/presentation/pages/apply_station_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/reset_password_page.dart';
@@ -28,6 +29,7 @@ final class AppRouter {
   static const String login = '/';
   static const String forgotPassword = '/forgot-password';
   static const String resetPassword = '/reset-password';
+  static const String applyStation = '/apply-station';
   static const String dashboard = '/dashboard';
   static const String fuelSale = '/fuel-sale';
   static const String paymentAlert = '/payment-alert';
@@ -69,6 +71,11 @@ final class AppRouter {
       case login:
         return MaterialPageRoute<void>(
           builder: (_) => const LoginPage(),
+          settings: settings,
+        );
+      case applyStation:
+        return MaterialPageRoute<void>(
+          builder: (_) => const ApplyStationPage(),
           settings: settings,
         );
       case forgotPassword:

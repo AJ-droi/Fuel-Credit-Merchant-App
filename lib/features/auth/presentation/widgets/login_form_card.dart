@@ -207,6 +207,14 @@ class _LoginFormCardState extends State<LoginFormCard> {
             ],
           ),
         ),
+        const SizedBox(height: AppSpacing.md),
+        TextButton.icon(
+          onPressed: () {
+            Navigator.of(context).pushNamed(AppRouter.applyStation);
+          },
+          icon: const Icon(Icons.local_gas_station_outlined),
+          label: const Text('Apply your fuel station'),
+        ),
       ],
     );
   }

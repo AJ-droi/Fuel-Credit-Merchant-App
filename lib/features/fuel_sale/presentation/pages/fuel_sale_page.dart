@@ -23,6 +23,8 @@ class FuelSalePage extends StatefulWidget {
 class _FuelSalePageState extends State<FuelSalePage> {
   final TextEditingController _litresController = TextEditingController();
   final TextEditingController _customerIdController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _qrCodeKey = GlobalKey();
 
   double _fuelRate = 1250;
   String _currency = 'NGN';
@@ -60,6 +62,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
   void dispose() {
     _qrExpiryTimer?.cancel();
     _statusPollTimer?.cancel();
+    _scrollController.dispose();
     _litresController.dispose();
     _customerIdController.dispose();
     super.dispose();
@@ -120,15 +123,31 @@ class _FuelSalePageState extends State<FuelSalePage> {
           _qrPaymentData = success.data.data;
           _activeTransactionId = success.data.data.transactionId;
           _awaitingCustomerConfirm = true;
+          _paymentTab = 0;
         });
         _startQrTimer(success.data.data.expiresAt);
         _startStatusPolling(success.data.data.transactionId);
+        _scrollQrCodeToCenter();
       case ApiFailure<QrPaymentResponse> failure:
         setState(() => _isGeneratingQr = false);
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(failure.error.message)));
     }
+  }
+
+  /// Scroll so the live QR sits near the middle of the viewport (station tablets).
+  void _scrollQrCodeToCenter() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final target = _qrCodeKey.currentContext;
+      if (target == null || !mounted) return;
+      Scrollable.ensureVisible(
+        target,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutCubic,
+        alignment: 0.5,
+      );
+    });
   }
 
   String _formattedAmount() {
@@ -411,6 +430,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
               _TopBar(textTheme: textTheme),
               Expanded(
                 child: SingleChildScrollView(
+                  controller: _scrollController,
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.md,
                     AppSpacing.md,
@@ -735,6 +755,7 @@ class _FuelSalePageState extends State<FuelSalePage> {
               child: Column(
                 children: [
                   Container(
+                    key: _qrCodeKey,
                     width: 280,
                     height: 280,
                     padding: const EdgeInsets.all(AppSpacing.md),

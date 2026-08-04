@@ -114,6 +114,10 @@ class ApiClient {
           if (options.path.startsWith('/')) {
             options.path = options.path.substring(1);
           }
+          // Multipart needs the boundary; a fixed application/json header breaks CAC uploads.
+          if (options.data is FormData) {
+            options.headers.remove(Headers.contentTypeHeader);
+          }
           handler.next(options);
         },
       ),
