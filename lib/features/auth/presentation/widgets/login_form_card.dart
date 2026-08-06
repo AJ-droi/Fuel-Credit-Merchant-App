@@ -213,7 +213,7 @@ class _LoginFormCardState extends State<LoginFormCard> {
             Navigator.of(context).pushNamed(AppRouter.applyStation);
           },
           icon: const Icon(Icons.local_gas_station_outlined),
-          label: const Text('Apply your fuel station'),
+          label: const Text('Indicate interest as a station'),
         ),
       ],
     );
